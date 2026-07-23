@@ -55,6 +55,7 @@ export function JournalEntry({
   mood,
   city,
   backHref = "/journal",
+  backLabel = "Journal",
   children,
 }: {
   title: string;
@@ -62,6 +63,7 @@ export function JournalEntry({
   mood: Mood;
   city: string;
   backHref?: string;
+  backLabel?: string;
   children: ReactNode;
 }) {
   const date = dateParts(publishedAt);
@@ -70,7 +72,7 @@ export function JournalEntry({
   return (
     <article className="article journal-entry">
       <div className="article-topbar">
-        <Link href={backHref} className="back-link">← Journal</Link>
+        <Link href={backHref} className="back-link">← {backLabel}</Link>
         <ShareButton title={title} />
       </div>
       <header className="article-header">

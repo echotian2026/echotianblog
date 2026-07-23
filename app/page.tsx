@@ -12,7 +12,7 @@ export default async function Home() {
   return (
     <EditableHomepage
       initialContent={initialContent}
-      publicPostCount={publicPosts.length}
+      publicPosts={publicPosts}
     />
   );
 }

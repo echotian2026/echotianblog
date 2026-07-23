@@ -8,15 +8,16 @@ import {
   useState,
 } from "react";
 import type { HomepageContent } from "@/lib/homepage";
+import type { JournalPost } from "@/lib/posts";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 export function EditableHomepage({
   initialContent,
-  publicPostCount,
+  publicPosts,
 }: {
   initialContent: HomepageContent;
-  publicPostCount: number;
+  publicPosts: JournalPost[];
 }) {
   const [content, setContent] = useState(initialContent);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -93,7 +94,7 @@ export function EditableHomepage({
   return (
     <div
       className={`home-page${editing ? " homepage-editing" : ""}`}
-      data-public-post-count={publicPostCount}
+      data-public-post-count={publicPosts.length}
     >
       <div className="homepage-edit-actions">
         {editing ? (
@@ -200,8 +201,17 @@ export function EditableHomepage({
 
       <EditableSection
         editing={editing}
+        authenticated={authenticated === true}
         heading={content.writingHeading}
         onHeading={(value) => update("writingHeading", value)}
+        addHref="/admin?section=writing"
+        addLabel="New writing post"
+        dynamicEntries={publicPosts
+          .filter((post) => post.section === "writing")
+          .map((post) => ({
+            href: `/posts/${post.slug}`,
+            label: post.title,
+          }))}
         entries={[
           {
             href: "/journal",
@@ -218,8 +228,17 @@ export function EditableHomepage({
 
       <EditableSection
         editing={editing}
+        authenticated={authenticated === true}
         heading={content.workHeading}
         onHeading={(value) => update("workHeading", value)}
+        addHref="/admin?section=work"
+        addLabel="New work post"
+        dynamicEntries={publicPosts
+          .filter((post) => post.section === "work")
+          .map((post) => ({
+            href: `/posts/${post.slug}`,
+            label: post.title,
+          }))}
         entries={[
           {
             href: "/work/skills",
@@ -287,11 +306,16 @@ export function EditableHomepage({
 
 function EditableSection({
   editing,
+  authenticated,
   heading,
   onHeading,
   entries,
+  dynamicEntries,
+  addHref,
+  addLabel,
 }: {
   editing: boolean;
+  authenticated: boolean;
   heading: string;
   onHeading: (value: string) => void;
   entries: Array<{
@@ -299,6 +323,9 @@ function EditableSection({
     label: string;
     onChange: (value: string) => void;
   }>;
+  dynamicEntries: Array<{ href: string; label: string }>;
+  addHref: string;
+  addLabel: string;
 }) {
   return (
     <section className="text-section">
@@ -329,6 +356,21 @@ function EditableSection({
             )}
           </li>
         ))}
+        {!editing &&
+          dynamicEntries.map((entry) => (
+            <li key={entry.href}>
+              <Link href={entry.href} className="inline-link">
+                {entry.label}
+              </Link>
+            </li>
+          ))}
+        {!editing && authenticated && (
+          <li className="add-entry-item">
+            <Link href={addHref} className="add-entry-link">
+              + {addLabel}
+            </Link>
+          </li>
+        )}
       </ul>
     </section>
   );

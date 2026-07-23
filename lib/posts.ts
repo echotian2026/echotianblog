@@ -5,6 +5,7 @@ import {
 } from "@/lib/supabaseClient";
 
 type Mood = "sad" | "neutral" | "happy";
+export type PostSection = "writing" | "work";
 
 type PostRow = {
   id: string;
@@ -13,6 +14,7 @@ type PostRow = {
   content: string;
   published_at: string;
   mood: Mood;
+  section: PostSection;
   city: string;
   is_private: boolean;
   created_at: string;
@@ -25,6 +27,7 @@ export type JournalPost = {
   content: string;
   publishedAt: string;
   mood: Mood;
+  section: PostSection;
   city: string;
   isPrivate: boolean;
   createdAt: string;
@@ -36,6 +39,7 @@ export type PostInput = {
   content: string;
   publishedAt: string;
   mood: Mood;
+  section: PostSection;
   city: string;
   isPrivate: boolean;
 };
@@ -48,6 +52,7 @@ function fromRow(row: PostRow): JournalPost {
     content: row.content,
     publishedAt: row.published_at,
     mood: row.mood,
+    section: row.section ?? "writing",
     city: row.city,
     isPrivate: row.is_private,
     createdAt: row.created_at,
@@ -64,14 +69,16 @@ export function slugify(value: string) {
   return normalized || `entry-${Date.now()}`;
 }
 
-export async function listPublicPosts() {
+export async function listPublicPosts(section?: PostSection) {
   if (!isSupabaseConfigured) return [];
-  const { data, error } = await supabase
+  let query = supabase
     .from("posts")
     .select("*")
     .eq("is_private", false)
     .order("published_at", { ascending: false })
     .order("created_at", { ascending: false });
+  if (section) query = query.eq("section", section);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return (data as PostRow[]).map(fromRow);
 }
@@ -126,6 +133,7 @@ export async function createPost(input: PostInput) {
       content: input.content,
       published_at: input.publishedAt,
       mood: input.mood,
+      section: input.section,
       city: input.city,
       is_private: input.isPrivate,
     })
@@ -164,6 +172,7 @@ export async function updatePost(id: string, input: Partial<PostInput>) {
         ? { published_at: input.publishedAt }
         : {}),
       ...(input.mood !== undefined ? { mood: input.mood } : {}),
+      ...(input.section !== undefined ? { section: input.section } : {}),
       ...(input.isPrivate !== undefined
         ? { is_private: input.isPrivate }
         : {}),

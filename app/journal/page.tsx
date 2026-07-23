@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminEntryLink } from "@/app/components/AdminEntryLink";
 import { listPublicPosts } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ function formatDate(value: string) {
 }
 
 export default async function JournalPage() {
-  const posts = await listPublicPosts();
+  const posts = await listPublicPosts("writing");
 
   return (
     <section className="directory-page">
@@ -23,6 +24,7 @@ export default async function JournalPage() {
       <p className="directory-intro">
         一些生活里看过、想过、做过，且想表达的东西。
       </p>
+      <AdminEntryLink section="writing" label="New writing post" />
 
       {posts.length ? (
         <ul className="directory-list">

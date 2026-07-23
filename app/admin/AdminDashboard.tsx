@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { JournalPost } from "@/lib/posts";
+import type { JournalPost, PostSection } from "@/lib/posts";
 
 type Mood = "sad" | "neutral" | "happy";
 type Draft = {
@@ -19,6 +19,7 @@ type Draft = {
   content: string;
   publishedAt: string;
   mood: Mood;
+  section: PostSection;
   isPrivate: boolean;
 };
 
@@ -28,13 +29,14 @@ const moods: Array<{ value: Mood; emoji: string; label: string }> = [
   { value: "happy", emoji: "😊", label: "开心" },
 ];
 
-const freshDraft = (): Draft => ({
+const freshDraft = (section: PostSection = "writing"): Draft => ({
   title: "",
   content: "",
   publishedAt: new Date(Date.now() - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16),
   mood: "neutral",
+  section,
   isPrivate: false,
 });
 
@@ -60,16 +62,21 @@ function snapshot(draft: Draft) {
     content: draft.content,
     publishedAt: draft.publishedAt,
     mood: draft.mood,
+    section: draft.section,
     isPrivate: draft.isPrivate,
   });
 }
 
-export function AdminDashboard() {
+export function AdminDashboard({
+  initialSection,
+}: {
+  initialSection: PostSection;
+}) {
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [posts, setPosts] = useState<JournalPost[]>([]);
-  const [draft, setDraft] = useState<Draft>(freshDraft);
+  const [draft, setDraft] = useState<Draft>(() => freshDraft(initialSection));
   const [message, setMessage] = useState("");
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -128,6 +135,7 @@ export function AdminDashboard() {
               content: savingDraft.content,
               publishedAt: new Date(savingDraft.publishedAt).toISOString(),
               mood: savingDraft.mood,
+              section: savingDraft.section,
               isPrivate: savingDraft.isPrivate,
             }),
           }
@@ -194,6 +202,7 @@ export function AdminDashboard() {
       content: post.content,
       publishedAt: localDate(post.publishedAt),
       mood: post.mood,
+      section: post.section,
       isPrivate: post.isPrivate,
     };
     lastSavedRef.current = snapshot(nextDraft);
@@ -204,9 +213,9 @@ export function AdminDashboard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function newEntry() {
+  function newEntry(section: PostSection = draft.section) {
     lastSavedRef.current = "";
-    setDraft(freshDraft());
+    setDraft(freshDraft(section));
     setSaveState("idle");
     setSavedAt("");
     setMessage("");
@@ -328,7 +337,7 @@ export function AdminDashboard() {
     await fetch("/api/admin/session", { method: "DELETE" });
     setAuthenticated(false);
     setPosts([]);
-    newEntry();
+    newEntry(initialSection);
   }
 
   if (!authChecked) {
@@ -373,7 +382,7 @@ export function AdminDashboard() {
         </div>
         <div className="admin-heading-actions">
           {draft.id && (
-            <button className="text-button" type="button" onClick={newEntry}>
+            <button className="text-button" type="button" onClick={() => newEntry()}>
               New entry
             </button>
           )}
@@ -418,6 +427,25 @@ export function AdminDashboard() {
           autoCapitalize="sentences"
           spellCheck
         />
+
+        <div className="editor-row">
+          <div>
+            <label htmlFor="section">Show this post in</label>
+            <select
+              id="section"
+              value={draft.section}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  section: event.target.value as PostSection,
+                })
+              }
+            >
+              <option value="writing">My Writing</option>
+              <option value="work">My Work</option>
+            </select>
+          </div>
+        </div>
 
         <fieldset className="mood-field">
           <legend>How did today feel?</legend>
@@ -549,6 +577,9 @@ export function AdminDashboard() {
                   <div>
                     <span className={`status-badge ${post.isPrivate ? "private" : "public"}`}>
                       {post.isPrivate ? "🔒 Private" : "🌐 Public"}
+                    </span>
+                    <span className="section-badge">
+                      {post.section === "work" ? "My Work" : "My Writing"}
                     </span>
                     <span className="post-mood" aria-label={`Mood: ${post.mood}`}>
                       {moods.find((mood) => mood.value === post.mood)?.emoji ?? "😐"}

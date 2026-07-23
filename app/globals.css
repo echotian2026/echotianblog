@@ -308,6 +308,33 @@ a.inline-link:hover {
   color: var(--subtle);
 }
 
+.text-list .add-entry-item::before {
+  content: "";
+  margin-right: 0;
+}
+
+.add-entry-link {
+  width: fit-content;
+  margin: 1rem 0 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-bright);
+  font-size: .76rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(192, 132, 252, .45);
+  text-underline-offset: .25em;
+}
+
+.text-list .add-entry-link {
+  margin: .45rem 0 0;
+}
+
+.add-entry-link:hover {
+  color: var(--foreground);
+  text-decoration-color: var(--accent-bright);
+}
+
 .contact-line {
   margin: 4.75rem 0 0;
   color: var(--muted);
@@ -713,7 +740,7 @@ label {
   font-weight: 600;
   letter-spacing: .02em;
 }
-input, textarea {
+input, textarea, select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: .55rem;
@@ -723,8 +750,9 @@ input, textarea {
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 input { min-height: 2.9rem; padding: 0 .85rem; }
+select { min-height: 2.9rem; padding: 0 .85rem; }
 textarea { padding: .9rem; resize: vertical; line-height: 1.65; }
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(168,85,247,.12);
 }
@@ -880,6 +908,10 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
 .mood-options label > span { font-size: 1.25rem; }
 .mood-options small { color: var(--muted); font-size: .7rem; }
 .post-mood { font-size: .9rem; }
+.section-badge {
+  color: var(--accent-bright);
+  font-size: .68rem;
+}
 .editor-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);

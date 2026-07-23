@@ -36,6 +36,8 @@ export default async function PostPage({ params }: Props) {
       publishedAt={post.publishedAt}
       mood={post.mood}
       city={post.city}
+      backHref={post.section === "work" ? "/work" : "/journal"}
+      backLabel={post.section === "work" ? "Work" : "Journal"}
     >
       <Markdown
         rehypePlugins={[rehypeRaw, [rehypeSanitize, journalSchema]]}
