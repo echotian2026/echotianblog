@@ -182,29 +182,6 @@ a.inline-link:hover {
   color: var(--subtle);
 }
 
-.history-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.history-list li {
-  display: grid;
-  grid-template-columns: 5rem 1fr;
-  gap: 1rem;
-  margin: .8rem 0;
-}
-
-.history-list span {
-  color: var(--subtle);
-  font: .76rem/1.75 var(--font-geist-mono), monospace;
-}
-
-.history-list p {
-  margin: 0;
-  color: var(--muted);
-}
-
 .intro { padding: 6.75rem 0 6rem; }
 .eyebrow {
   margin: 0 0 1.2rem;
@@ -487,8 +464,6 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
 @media (max-width: 639px) {
   .site-header { height: 4.8rem; }
   .home-page { padding-top: 3.5rem; }
-  .history-list { grid-template-columns: 1fr; }
-  .history-list li { grid-template-columns: 4.25rem 1fr; gap: .5rem; }
   .intro { padding: 5.5rem 0 4.5rem; }
   .post-row { align-items: flex-start; flex-direction: column; gap: .35rem; padding-top: 1rem; padding-bottom: 1rem; }
   .article { padding-top: 3.5rem; }

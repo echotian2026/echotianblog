@@ -57,23 +57,6 @@ export default async function Home() {
         </p>
       </section>
 
-      <section className="text-section" aria-labelledby="history-heading">
-        <h2 id="history-heading">My history</h2>
-        <ul className="history-list">
-          <li>
-            <span>Now</span>
-            <p>Building products and research systems around financial AI.</p>
-          </li>
-          <li>
-            <span>Before</span>
-            <p>Led product operations, customer growth, and commercialization work.</p>
-          </li>
-          <li>
-            <span>Always</span>
-            <p>Writing, learning, and looking for clearer ways to explain difficult things.</p>
-          </li>
-        </ul>
-      </section>
     </div>
   );
 }

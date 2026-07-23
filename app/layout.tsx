@@ -40,14 +40,12 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Echo",
       description:
         "一些我在生活中看过、想过、做过，且想表达的东西。",
-      images: ["/og-v2.png"],
     },
     twitter: {
       card: "summary_large_image",
       title: "Echo",
       description:
         "一些我在生活中看过、想过、做过，且想表达的东西。",
-      images: ["/og-v2.png"],
     },
   };
 }
