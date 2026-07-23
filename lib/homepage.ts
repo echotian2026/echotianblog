@@ -1,4 +1,8 @@
-import { getD1 } from "@/db";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import {
+  isSupabaseConfigured,
+  supabase,
+} from "@/lib/supabaseClient";
 
 export type HomepageContent = {
   name: string;
@@ -45,31 +49,6 @@ export const defaultHomepageContent: HomepageContent = {
   email: "echochangtian@163.com",
 };
 
-let homepageSchemaReady: Promise<void> | null = null;
-
-async function ensureHomepageSchema() {
-  if (!homepageSchemaReady) {
-    const d1 = getD1();
-    homepageSchemaReady = d1
-      .batch([
-        d1.prepare(`
-          CREATE TABLE IF NOT EXISTS homepage_content (
-            id INTEGER PRIMARY KEY NOT NULL,
-            content TEXT NOT NULL,
-            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-          )
-        `),
-        d1
-          .prepare(
-            "INSERT OR IGNORE INTO homepage_content (id, content) VALUES (1, ?)"
-          )
-          .bind(JSON.stringify(defaultHomepageContent)),
-      ])
-      .then(() => undefined);
-  }
-  return homepageSchemaReady;
-}
-
 function normalizeHomepageContent(value: unknown): HomepageContent {
   if (!value || typeof value !== "object") return defaultHomepageContent;
   const record = value as Record<string, unknown>;
@@ -82,26 +61,29 @@ function normalizeHomepageContent(value: unknown): HomepageContent {
 }
 
 export async function getHomepageContent() {
-  await ensureHomepageSchema();
-  const row = await getD1()
-    .prepare("SELECT content FROM homepage_content WHERE id = 1")
-    .first<{ content: string }>();
-  if (!row?.content) return defaultHomepageContent;
-  try {
-    return normalizeHomepageContent(JSON.parse(row.content));
-  } catch {
-    return defaultHomepageContent;
-  }
+  if (!isSupabaseConfigured) return defaultHomepageContent;
+  const { data, error } = await supabase
+    .from("homepage_content")
+    .select("content")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error || !data?.content) return defaultHomepageContent;
+  const value =
+    typeof data.content === "string"
+      ? JSON.parse(data.content)
+      : data.content;
+  return normalizeHomepageContent(value);
 }
 
 export async function updateHomepageContent(value: unknown) {
-  await ensureHomepageSchema();
   const content = normalizeHomepageContent(value);
-  await getD1()
-    .prepare(
-      "UPDATE homepage_content SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1"
-    )
-    .bind(JSON.stringify(content))
-    .run();
+  const { error } = await getSupabaseAdmin()
+    .from("homepage_content")
+    .upsert({
+      id: 1,
+      content,
+      updated_at: new Date().toISOString(),
+    });
+  if (error) throw new Error(error.message);
   return content;
 }

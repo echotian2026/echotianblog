@@ -13,8 +13,10 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 export function EditableHomepage({
   initialContent,
+  publicPostCount,
 }: {
   initialContent: HomepageContent;
+  publicPostCount: number;
 }) {
   const [content, setContent] = useState(initialContent);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -89,7 +91,10 @@ export function EditableHomepage({
   }
 
   return (
-    <div className={`home-page${editing ? " homepage-editing" : ""}`}>
+    <div
+      className={`home-page${editing ? " homepage-editing" : ""}`}
+      data-public-post-count={publicPostCount}
+    >
       <div className="homepage-edit-actions">
         {editing ? (
           <>

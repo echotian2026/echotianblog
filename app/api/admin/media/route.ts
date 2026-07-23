@@ -1,5 +1,5 @@
-import { env } from "cloudflare:workers";
 import { isAdminRequest } from "@/lib/admin-auth";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
@@ -40,19 +40,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const runtime = env as unknown as { MEDIA?: R2Bucket };
-  if (!runtime.MEDIA) {
-    return Response.json({ error: "Media storage is unavailable." }, { status: 503 });
-  }
-
   const key = `${isImage ? "images" : "audio"}/${crypto.randomUUID()}-${safeName(file.name) || "upload"}`;
-  await runtime.MEDIA.put(key, file.stream(), {
-    httpMetadata: { contentType: file.type },
-    customMetadata: { originalName: file.name },
+  const storage = getSupabaseAdmin().storage.from("media");
+  const { error } = await storage.upload(key, await file.arrayBuffer(), {
+    contentType: file.type,
+    cacheControl: "31536000",
+    upsert: false,
   });
+  if (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+  const { data } = storage.getPublicUrl(key);
 
   return Response.json({
-    url: `/api/media/${key}`,
+    url: data.publicUrl,
     name: file.name,
     kind: isImage ? "image" : "audio",
   });

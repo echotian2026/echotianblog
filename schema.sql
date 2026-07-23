@@ -26,5 +26,30 @@ create policy "Public can read public posts"
   to anon, authenticated
   using (is_private = false);
 
+create table if not exists public.homepage_content (
+  id integer primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.homepage_content (id, content)
+values (1, '{}'::jsonb)
+on conflict (id) do nothing;
+
+alter table public.homepage_content enable row level security;
+
+drop policy if exists "Public can read homepage content"
+  on public.homepage_content;
+create policy "Public can read homepage content"
+  on public.homepage_content
+  for select
+  to anon, authenticated
+  using (id = 1);
+
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do update set public = true;
+
 -- Admin writes and private reads must use the Supabase service-role key from
--- server-side code. The service role bypasses RLS and must never reach a browser.
+-- server-side code. The service role bypasses RLS, uploads to the public media
+-- bucket, and must never reach a browser.

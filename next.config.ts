@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Keep server rendering enabled for Vercel API routes and dynamic pages.
 };
 
 export default nextConfig;

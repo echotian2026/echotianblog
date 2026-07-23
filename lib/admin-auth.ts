@@ -1,11 +1,7 @@
-import { env } from "cloudflare:workers";
-
 export const ADMIN_COOKIE = "purple_journal_admin";
 
 function configuredPassword() {
-  const runtime = env as unknown as { ADMIN_PASSWORD?: string };
   return (
-    runtime.ADMIN_PASSWORD ||
     process.env.ADMIN_PASSWORD ||
     (process.env.NODE_ENV === "development" ? "journal-preview" : "")
   );

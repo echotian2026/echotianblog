@@ -1,59 +1,57 @@
-import { and, desc, eq } from "drizzle-orm";
-import { getD1, getDb } from "@/db";
-import { posts } from "@/db/schema";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import {
+  isSupabaseConfigured,
+  supabase,
+} from "@/lib/supabaseClient";
 
-export type JournalPost = typeof posts.$inferSelect;
+type Mood = "sad" | "neutral" | "happy";
+
+type PostRow = {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  published_at: string;
+  mood: Mood;
+  city: string;
+  is_private: boolean;
+  created_at: string;
+};
+
+export type JournalPost = {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  publishedAt: string;
+  mood: Mood;
+  city: string;
+  isPrivate: boolean;
+  createdAt: string;
+};
+
 export type PostInput = {
   title: string;
   slug?: string;
   content: string;
   publishedAt: string;
-  mood: "sad" | "neutral" | "happy";
+  mood: Mood;
   city: string;
   isPrivate: boolean;
 };
 
-let schemaReady: Promise<void> | null = null;
-
-async function ensureSchema() {
-  if (!schemaReady) {
-    const d1 = getD1();
-    schemaReady = (async () => {
-      await d1.batch([
-        d1.prepare(`
-          CREATE TABLE IF NOT EXISTS posts (
-            id TEXT PRIMARY KEY NOT NULL,
-            slug TEXT NOT NULL UNIQUE,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL DEFAULT '',
-            published_at TEXT NOT NULL,
-            mood TEXT NOT NULL DEFAULT 'neutral',
-            city TEXT NOT NULL DEFAULT 'Shanghai',
-            is_private INTEGER NOT NULL DEFAULT 0,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-          )
-        `),
-        d1.prepare(
-          "CREATE INDEX IF NOT EXISTS posts_published_at_idx ON posts (published_at DESC)"
-        ),
-      ]);
-
-      const columns = await d1.prepare("PRAGMA table_info(posts)").all<{
-        name: string;
-      }>();
-      if (!columns.results.some((column) => column.name === "mood")) {
-        await d1
-          .prepare("ALTER TABLE posts ADD COLUMN mood TEXT NOT NULL DEFAULT 'neutral'")
-          .run();
-      }
-      if (!columns.results.some((column) => column.name === "city")) {
-        await d1
-          .prepare("ALTER TABLE posts ADD COLUMN city TEXT NOT NULL DEFAULT 'Shanghai'")
-          .run();
-      }
-    })();
-  }
-  return schemaReady;
+function fromRow(row: PostRow): JournalPost {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    content: row.content,
+    publishedAt: row.published_at,
+    mood: row.mood,
+    city: row.city,
+    isPrivate: row.is_private,
+    createdAt: row.created_at,
+  };
 }
 
 export function slugify(value: string) {
@@ -67,109 +65,124 @@ export function slugify(value: string) {
 }
 
 export async function listPublicPosts() {
-  await ensureSchema();
-  return getDb()
-    .select()
-    .from(posts)
-    .where(eq(posts.isPrivate, false))
-    .orderBy(desc(posts.publishedAt), desc(posts.createdAt));
+  if (!isSupabaseConfigured) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("is_private", false)
+    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data as PostRow[]).map(fromRow);
 }
 
 export async function listAllPosts() {
-  await ensureSchema();
-  return getDb()
-    .select()
-    .from(posts)
-    .orderBy(desc(posts.publishedAt), desc(posts.createdAt));
+  const { data, error } = await getSupabaseAdmin()
+    .from("posts")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data as PostRow[]).map(fromRow);
 }
 
 export async function getPublicPost(slug: string) {
-  await ensureSchema();
-  const [post] = await getDb()
-    .select()
-    .from(posts)
-    .where(and(eq(posts.slug, slug), eq(posts.isPrivate, false)))
-    .limit(1);
-  return post ?? null;
+  if (!isSupabaseConfigured) return null;
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_private", false)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? fromRow(data as PostRow) : null;
 }
 
 async function uniqueSlug(title: string, requested?: string, ignoreId?: string) {
+  const admin = getSupabaseAdmin();
   const base = slugify(requested || title);
   let candidate = base;
   let suffix = 2;
 
   while (true) {
-    const [match] = await getDb()
-      .select({ id: posts.id })
-      .from(posts)
-      .where(eq(posts.slug, candidate))
-      .limit(1);
-    if (!match || match.id === ignoreId) return candidate;
+    const { data, error } = await admin
+      .from("posts")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data || data.id === ignoreId) return candidate;
     candidate = `${base}-${suffix++}`;
   }
 }
 
 export async function createPost(input: PostInput) {
-  await ensureSchema();
   const slug = await uniqueSlug(input.title, input.slug);
-  const [post] = await getDb()
-    .insert(posts)
-    .values({
-      id: crypto.randomUUID(),
+  const { data, error } = await getSupabaseAdmin()
+    .from("posts")
+    .insert({
       slug,
       title: input.title,
       content: input.content,
-      publishedAt: input.publishedAt,
+      published_at: input.publishedAt,
       mood: input.mood,
       city: input.city,
-      isPrivate: input.isPrivate,
+      is_private: input.isPrivate,
     })
-    .returning();
-  return post;
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return fromRow(data as PostRow);
 }
 
 export async function updatePost(id: string, input: Partial<PostInput>) {
-  await ensureSchema();
-  const [existing] = await getDb()
-    .select()
-    .from(posts)
-    .where(eq(posts.id, id))
-    .limit(1);
+  const admin = getSupabaseAdmin();
+  const { data: existing, error: existingError } = await admin
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (existingError) throw new Error(existingError.message);
   if (!existing) return null;
 
+  const current = existing as PostRow;
   const slug =
     input.title || input.slug
       ? await uniqueSlug(
-          input.title ?? existing.title,
-          input.slug ?? existing.slug,
+          input.title ?? current.title,
+          input.slug ?? current.slug,
           id
         )
-      : existing.slug;
+      : current.slug;
 
-  const [post] = await getDb()
-    .update(posts)
-    .set({
+  const { data, error } = await admin
+    .from("posts")
+    .update({
       ...(input.title !== undefined ? { title: input.title } : {}),
       ...(input.content !== undefined ? { content: input.content } : {}),
       ...(input.publishedAt !== undefined
-        ? { publishedAt: input.publishedAt }
+        ? { published_at: input.publishedAt }
         : {}),
       ...(input.mood !== undefined ? { mood: input.mood } : {}),
       ...(input.isPrivate !== undefined
-        ? { isPrivate: input.isPrivate }
+        ? { is_private: input.isPrivate }
         : {}),
       slug,
     })
-    .where(eq(posts.id, id))
-    .returning();
-  return post ?? null;
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return fromRow(data as PostRow);
 }
 
 export async function deletePost(id: string) {
-  await ensureSchema();
-  const deleted = await getDb()
-    .delete(posts)
-    .where(eq(posts.id, id))
-    .returning({ id: posts.id });
-  return deleted.length > 0;
+  const { data, error } = await getSupabaseAdmin()
+    .from("posts")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data);
 }
