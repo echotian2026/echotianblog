@@ -913,10 +913,9 @@ input:focus, textarea:focus, select:focus {
 }
 input::placeholder, textarea::placeholder { color: var(--subtle); }
 
-.admin { padding: 5rem 0 6rem; }
+.admin { padding: 2.25rem 0 6rem; }
 .admin-utility-row {
-  min-height: 2.5rem;
-  margin-bottom: .75rem;
+  margin-bottom: .55rem;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1127,6 +1126,22 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
   grid-template-columns: minmax(0, 16rem);
 }
 .editor-row > div { display: grid; gap: .7rem; }
+.editor-settings-row {
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: .75rem;
+  margin-top: .15rem;
+}
+.editor-settings-row > div {
+  gap: .35rem;
+}
+.editor-settings-row input,
+.editor-settings-row select {
+  min-height: 2.45rem;
+  padding: 0 .7rem;
+  border-radius: .45rem;
+  font-size: .82rem;
+}
 .privacy-control {
   min-height: 4.7rem;
   padding: .9rem;
@@ -1195,12 +1210,13 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
   .post-row { align-items: flex-start; flex-direction: column; gap: .35rem; padding-top: 1rem; padding-bottom: 1rem; }
   .article { padding-top: 3.5rem; }
   .article-header { padding-top: 3.5rem; }
-  .admin { padding-top: 3.5rem; }
+  .admin { padding-top: 1.5rem; }
   .admin-heading { align-items: flex-start; }
   .admin-heading-actions { align-items: flex-end; flex-direction: column; gap: .25rem; }
   .admin-heading h1 { font-size: 2.7rem; }
   .editor { margin: 0 -.25rem; padding: 1rem; }
   .editor-row { grid-template-columns: 1fr; }
+  .editor-settings-row { gap: .65rem; }
   .mood-options label { flex-direction: column; gap: .15rem; }
   .manage-list li { align-items: flex-start; flex-direction: column; }
   .manage-actions { justify-content: flex-start; }

@@ -342,13 +342,6 @@ export function AdminDashboard({
     await loadPosts();
   }
 
-  async function logout() {
-    await fetch("/api/admin/session", { method: "DELETE" });
-    setAuthenticated(false);
-    setPosts([]);
-    newEntry(initialSection);
-  }
-
   if (!authChecked) {
     return <div className="admin-loading">Opening your journal…</div>;
   }
@@ -384,16 +377,13 @@ export function AdminDashboard({
 
   return (
     <div className="admin">
-      <div className="admin-utility-row">
-        {draft.id && (
+      {draft.id && (
+        <div className="admin-utility-row">
           <button className="text-button" type="button" onClick={() => newEntry()}>
             Add another entry
           </button>
-        )}
-        <button className="text-button" type="button" onClick={logout}>
-          Log out
-        </button>
-      </div>
+        </div>
+      )}
 
       <div className="editor">
         <label htmlFor="title">Title</label>
@@ -436,9 +426,9 @@ export function AdminDashboard({
           </div>
         </div>
 
-        <div className="editor-row">
+        <div className="editor-row editor-settings-row">
           <div>
-            <label htmlFor="section">Show this post in</label>
+            <label htmlFor="section">Section</label>
             <select
               id="section"
               value={draft.section}
@@ -454,12 +444,14 @@ export function AdminDashboard({
                 <option value="insights">Insights</option>
               </optgroup>
               <optgroup label="My Work">
-                <option value="work">Work entry</option>
+                <option value="work">My Work</option>
               </optgroup>
             </select>
           </div>
           <div>
-            <label htmlFor="tags">Tags</label>
+            <label htmlFor="tags">
+              Tags <span>comma separated · # optional</span>
+            </label>
             <input
               id="tags"
               value={draft.tagsText}
@@ -470,9 +462,6 @@ export function AdminDashboard({
               autoCapitalize="none"
               spellCheck={false}
             />
-            <small className="field-hint">
-              Separate tags with commas. # is optional.
-            </small>
           </div>
         </div>
 
