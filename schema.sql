@@ -10,7 +10,7 @@ create table if not exists public.posts (
   mood text not null default 'neutral'
     check (mood in ('sad', 'neutral', 'happy')),
   section text not null default 'writing'
-    check (section in ('writing', 'work')),
+    check (section in ('writing', 'insights', 'work')),
   city text not null default 'Shanghai',
   is_private boolean not null default false,
   created_at timestamptz not null default now()
@@ -23,7 +23,7 @@ alter table public.posts
   drop constraint if exists posts_section_check;
 alter table public.posts
   add constraint posts_section_check
-  check (section in ('writing', 'work'));
+  check (section in ('writing', 'insights', 'work'));
 
 create index if not exists posts_published_at_idx
   on public.posts (published_at desc);

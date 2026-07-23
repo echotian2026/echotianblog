@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     content?: string;
     publishedAt?: string;
     mood?: "sad" | "neutral" | "happy";
-    section?: "writing" | "work";
+    section?: "writing" | "insights" | "work";
     isPrivate?: boolean;
   };
   const title = payload.title?.trim() ?? "";
@@ -44,7 +44,12 @@ export async function POST(request: Request) {
     content: payload.content ?? "",
     publishedAt: payload.publishedAt || new Date().toISOString(),
     mood: payload.mood ?? "neutral",
-    section: payload.section === "work" ? "work" : "writing",
+    section:
+      payload.section === "work"
+        ? "work"
+        : payload.section === "insights"
+          ? "insights"
+          : "writing",
     city: cityFromRequest(request),
     isPrivate: Boolean(payload.isPrivate),
   });

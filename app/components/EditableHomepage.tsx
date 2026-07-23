@@ -201,6 +201,7 @@ export function EditableHomepage({
 
       <EditableSection
         editing={editing}
+        authenticated={authenticated === true}
         heading={content.writingHeading}
         onHeading={(value) => update("writingHeading", value)}
         entries={[
@@ -215,6 +216,22 @@ export function EditableHomepage({
             onChange: (value) => update("insightsLabel", value),
           },
         ]}
+      />
+
+      <EditableSection
+        editing={editing}
+        authenticated={authenticated === true}
+        heading={content.workHeading}
+        onHeading={(value) => update("workHeading", value)}
+        dynamicEntries={publicPosts
+          .filter((post) => post.section === "work")
+          .map((post) => ({
+            href: `/posts/${post.slug}`,
+            label: post.title,
+          }))}
+        addHref="/admin?section=work"
+        addLabel="Add work entry"
+        entries={[]}
       />
 
       {editing ? (
@@ -270,11 +287,16 @@ export function EditableHomepage({
 
 function EditableSection({
   editing,
+  authenticated,
   heading,
   onHeading,
   entries,
+  dynamicEntries = [],
+  addHref,
+  addLabel,
 }: {
   editing: boolean;
+  authenticated: boolean;
   heading: string;
   onHeading: (value: string) => void;
   entries: Array<{
@@ -282,6 +304,9 @@ function EditableSection({
     label: string;
     onChange: (value: string) => void;
   }>;
+  dynamicEntries?: Array<{ href: string; label: string }>;
+  addHref?: string;
+  addLabel?: string;
 }) {
   return (
     <section className="text-section">
@@ -312,6 +337,21 @@ function EditableSection({
             )}
           </li>
         ))}
+        {!editing &&
+          dynamicEntries.map((entry) => (
+            <li key={entry.href}>
+              <Link href={entry.href} className="inline-link">
+                {entry.label}
+              </Link>
+            </li>
+          ))}
+        {!editing && authenticated && addHref && addLabel && (
+          <li className="add-entry-item">
+            <Link href={addHref} className="add-entry-link">
+              + {addLabel}
+            </Link>
+          </li>
+        )}
       </ul>
     </section>
   );

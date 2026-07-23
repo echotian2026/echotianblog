@@ -10,6 +10,10 @@ export default async function AdminPage({
 }) {
   const params = await searchParams;
   const initialSection: PostSection =
-    params.section === "work" ? "work" : "writing";
+    params.section === "work"
+      ? "work"
+      : params.section === "insights"
+        ? "insights"
+        : "writing";
   return <AdminDashboard initialSection={initialSection} />;
 }

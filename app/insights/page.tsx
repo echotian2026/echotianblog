@@ -14,7 +14,7 @@ function formatDate(value: string) {
 }
 
 export default async function InsightsPage() {
-  const posts = await listPublicPosts("work");
+  const posts = await listPublicPosts("insights");
 
   return (
     <section className="directory-page">
@@ -22,7 +22,7 @@ export default async function InsightsPage() {
       <p className="eyebrow">My writing</p>
       <h1>Insights</h1>
       <p className="directory-intro">那些值得反复提醒自己的事。</p>
-      <AdminEntryLink section="work" label="Add entry" />
+      <AdminEntryLink section="insights" label="Add entry" />
       <ul className="directory-list">
         <li>
           <Link href="/insights/gratitude" className="inline-link">

@@ -5,7 +5,7 @@ import {
 } from "@/lib/supabaseClient";
 
 type Mood = "sad" | "neutral" | "happy";
-export type PostSection = "writing" | "work";
+export type PostSection = "writing" | "insights" | "work";
 
 type PostRow = {
   id: string;

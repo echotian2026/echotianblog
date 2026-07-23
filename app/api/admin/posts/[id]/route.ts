@@ -16,7 +16,7 @@ export async function PATCH(
     content?: string;
     publishedAt?: string;
     mood?: "sad" | "neutral" | "happy";
-    section?: "writing" | "work";
+    section?: "writing" | "insights" | "work";
     isPrivate?: boolean;
   };
   const post = await updatePost(id, payload);
