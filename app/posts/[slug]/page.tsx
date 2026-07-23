@@ -37,6 +37,7 @@ export default async function PostPage({ params }: Props) {
       publishedAt={post.publishedAt}
       mood={post.mood}
       city={post.city}
+      tags={post.tags}
       backHref={
         post.section === "work"
           ? "/work"

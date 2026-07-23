@@ -15,6 +15,7 @@ type PostRow = {
   published_at: string;
   mood: Mood;
   section: PostSection;
+  tags: string[];
   city: string;
   is_private: boolean;
   created_at: string;
@@ -28,6 +29,7 @@ export type JournalPost = {
   publishedAt: string;
   mood: Mood;
   section: PostSection;
+  tags: string[];
   city: string;
   isPrivate: boolean;
   createdAt: string;
@@ -40,6 +42,7 @@ export type PostInput = {
   publishedAt: string;
   mood: Mood;
   section: PostSection;
+  tags: string[];
   city: string;
   isPrivate: boolean;
 };
@@ -53,6 +56,7 @@ function fromRow(row: PostRow): JournalPost {
     publishedAt: row.published_at,
     mood: row.mood,
     section: row.section ?? "writing",
+    tags: normalizeTags(row.tags),
     city: row.city,
     isPrivate: row.is_private,
     createdAt: row.created_at,
@@ -67,6 +71,34 @@ export function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized || `entry-${Date.now()}`;
+}
+
+export function normalizeTags(value: unknown) {
+  const values = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(/[,\n]/)
+      : [];
+
+  return Array.from(
+    new Set(
+      values
+        .filter((tag): tag is string => typeof tag === "string")
+        .map((tag) =>
+          tag
+            .trim()
+            .replace(/^#+/, "")
+            .toLocaleLowerCase()
+            .replace(/\s+/g, "-")
+        )
+        .filter(
+          (tag) =>
+            tag.length > 0 &&
+            tag.length <= 40 &&
+            /^[\p{L}\p{N}_-]+$/u.test(tag)
+        )
+    )
+  ).slice(0, 10);
 }
 
 export async function listPublicPosts(section?: PostSection) {
@@ -87,6 +119,21 @@ export async function listAllPosts() {
   const { data, error } = await getSupabaseAdmin()
     .from("posts")
     .select("*")
+    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data as PostRow[]).map(fromRow);
+}
+
+export async function listPublicPostsByTag(tag: string) {
+  if (!isSupabaseConfigured) return [];
+  const normalized = normalizeTags([tag])[0];
+  if (!normalized) return [];
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("is_private", false)
+    .contains("tags", [normalized])
     .order("published_at", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -134,6 +181,7 @@ export async function createPost(input: PostInput) {
       published_at: input.publishedAt,
       mood: input.mood,
       section: input.section,
+      tags: normalizeTags(input.tags),
       city: input.city,
       is_private: input.isPrivate,
     })
@@ -173,6 +221,7 @@ export async function updatePost(id: string, input: Partial<PostInput>) {
         : {}),
       ...(input.mood !== undefined ? { mood: input.mood } : {}),
       ...(input.section !== undefined ? { section: input.section } : {}),
+      ...(input.tags !== undefined ? { tags: normalizeTags(input.tags) } : {}),
       ...(input.isPrivate !== undefined
         ? { is_private: input.isPrivate }
         : {}),

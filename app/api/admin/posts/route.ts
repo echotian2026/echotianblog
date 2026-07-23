@@ -1,5 +1,5 @@
 import { isAdminRequest } from "@/lib/admin-auth";
-import { createPost, listAllPosts } from "@/lib/posts";
+import { createPost, listAllPosts, normalizeTags } from "@/lib/posts";
 
 function unauthorized() {
   return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     publishedAt?: string;
     mood?: "sad" | "neutral" | "happy";
     section?: "writing" | "insights" | "work";
+    tags?: unknown;
     isPrivate?: boolean;
   };
   const title = payload.title?.trim() ?? "";
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
         : payload.section === "insights"
           ? "insights"
           : "writing",
+    tags: normalizeTags(payload.tags),
     city: cityFromRequest(request),
     isPrivate: Boolean(payload.isPrivate),
   });

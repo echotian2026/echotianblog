@@ -12,6 +12,7 @@ import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { HomepageContent } from "@/lib/homepage";
+import { normalizeTags } from "@/lib/posts";
 import { EntryFooter } from "./JournalEntry";
 import { ShareButton } from "./ShareButton";
 
@@ -49,6 +50,7 @@ export function EditableInsight({
   const titleKey =
     kind === "gratitude" ? "gratitudeLabel" : "becomingLabel";
   const bodyKey = kind === "gratitude" ? "gratitudeBody" : "becomingBody";
+  const tagsKey = kind === "gratitude" ? "gratitudeTags" : "becomingTags";
   const [content, setContent] = useState(initialContent);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [editing, setEditing] = useState(false);
@@ -206,6 +208,7 @@ export function EditableInsight({
 
   const title = content[titleKey];
   const body = content[bodyKey];
+  const tags = normalizeTags(content[tagsKey]);
 
   return (
     <article className={`essay${editing ? " essay-editing" : ""}`}>
@@ -264,6 +267,37 @@ export function EditableInsight({
         ) : (
           <h1>{title}</h1>
         )}
+        {editing ? (
+          <div className="essay-tags-editor">
+            <label htmlFor={`${kind}-tags`}>Tags</label>
+            <input
+              id={`${kind}-tags`}
+              value={content[tagsKey]}
+              onChange={(event) =>
+                setContent((current) => ({
+                  ...current,
+                  [tagsKey]: event.target.value,
+                }))
+              }
+              placeholder="growth, family, gratitude"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            <small>Separate tags with commas. # is optional.</small>
+          </div>
+        ) : tags.length > 0 ? (
+          <div className="post-tags" aria-label="Tags">
+            {tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="post-tag"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </header>
 
       {editing ? (

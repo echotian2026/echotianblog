@@ -1,5 +1,5 @@
 import { isAdminRequest } from "@/lib/admin-auth";
-import { deletePost, updatePost } from "@/lib/posts";
+import { deletePost, normalizeTags, updatePost } from "@/lib/posts";
 
 function unauthorized() {
   return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,9 +17,14 @@ export async function PATCH(
     publishedAt?: string;
     mood?: "sad" | "neutral" | "happy";
     section?: "writing" | "insights" | "work";
+    tags?: unknown;
     isPrivate?: boolean;
   };
-  const post = await updatePost(id, payload);
+  const { tags, ...postUpdates } = payload;
+  const post = await updatePost(id, {
+    ...postUpdates,
+    ...(tags !== undefined ? { tags: normalizeTags(tags) } : {}),
+  });
   return post
     ? Response.json({ post })
     : Response.json({ error: "Post not found." }, { status: 404 });

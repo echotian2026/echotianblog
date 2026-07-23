@@ -54,6 +54,7 @@ export function JournalEntry({
   publishedAt,
   mood,
   city,
+  tags = [],
   backHref = "/journal",
   backLabel = "Journal",
   children,
@@ -62,6 +63,7 @@ export function JournalEntry({
   publishedAt: string;
   mood: Mood;
   city: string;
+  tags?: string[];
   backHref?: string;
   backLabel?: string;
   children: ReactNode;
@@ -90,6 +92,19 @@ export function JournalEntry({
           </span>
         </div>
         <h1>{title}</h1>
+        {tags.length > 0 && (
+          <div className="post-tags" aria-label="Tags">
+            {tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="post-tag"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
       <div className="prose prose-purple dark:prose-invert entry-prose">
         {children}

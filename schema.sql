@@ -11,6 +11,7 @@ create table if not exists public.posts (
     check (mood in ('sad', 'neutral', 'happy')),
   section text not null default 'writing'
     check (section in ('writing', 'insights', 'work')),
+  tags text[] not null default '{}'::text[],
   city text not null default 'Shanghai',
   is_private boolean not null default false,
   created_at timestamptz not null default now()
@@ -18,6 +19,9 @@ create table if not exists public.posts (
 
 alter table public.posts
   add column if not exists section text not null default 'writing';
+
+alter table public.posts
+  add column if not exists tags text[] not null default '{}'::text[];
 
 alter table public.posts
   drop constraint if exists posts_section_check;
@@ -30,6 +34,9 @@ create index if not exists posts_published_at_idx
 
 create index if not exists posts_section_published_at_idx
   on public.posts (section, published_at desc);
+
+create index if not exists posts_tags_idx
+  on public.posts using gin (tags);
 
 alter table public.posts enable row level security;
 

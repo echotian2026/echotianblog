@@ -20,6 +20,7 @@ type Draft = {
   publishedAt: string;
   mood: Mood;
   section: PostSection;
+  tagsText: string;
   isPrivate: boolean;
 };
 
@@ -37,6 +38,7 @@ const freshDraft = (section: PostSection = "writing"): Draft => ({
     .slice(0, 16),
   mood: "neutral",
   section,
+  tagsText: "",
   isPrivate: false,
 });
 
@@ -63,6 +65,7 @@ function snapshot(draft: Draft) {
     publishedAt: draft.publishedAt,
     mood: draft.mood,
     section: draft.section,
+    tagsText: draft.tagsText,
     isPrivate: draft.isPrivate,
   });
 }
@@ -133,6 +136,7 @@ export function AdminDashboard({
               publishedAt: new Date(savingDraft.publishedAt).toISOString(),
               mood: savingDraft.mood,
               section: savingDraft.section,
+              tags: savingDraft.tagsText,
               isPrivate: savingDraft.isPrivate,
             }),
           }
@@ -206,6 +210,7 @@ export function AdminDashboard({
       publishedAt: localDate(post.publishedAt),
       mood: post.mood,
       section: post.section,
+      tagsText: post.tags.join(", "),
       isPrivate: post.isPrivate,
     };
     lastSavedRef.current = snapshot(nextDraft);
@@ -453,6 +458,22 @@ export function AdminDashboard({
               </optgroup>
             </select>
           </div>
+          <div>
+            <label htmlFor="tags">Tags</label>
+            <input
+              id="tags"
+              value={draft.tagsText}
+              onChange={(event) =>
+                setDraft({ ...draft, tagsText: event.target.value })
+              }
+              placeholder="growth, family, travel"
+              autoCapitalize="none"
+              spellCheck={false}
+            />
+            <small className="field-hint">
+              Separate tags with commas. # is optional.
+            </small>
+          </div>
         </div>
 
         <fieldset className="mood-field">
@@ -625,6 +646,11 @@ export function AdminDashboard({
                     <time>{displayDate(post.publishedAt)}</time>
                   </div>
                   <strong>{post.title}</strong>
+                  {post.tags.length > 0 && (
+                    <span className="manage-tags">
+                      {post.tags.map((tag) => `#${tag}`).join(" ")}
+                    </span>
+                  )}
                 </div>
                 <div className="manage-actions">
                   <button type="button" onClick={() => edit(post)}>Edit</button>

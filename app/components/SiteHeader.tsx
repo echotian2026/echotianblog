@@ -27,6 +27,7 @@ export function SiteHeader() {
     <header className="site-header">
       <nav className="nav-links" aria-label="Primary navigation">
         <Link href="/" aria-label="Home">Home</Link>
+        <Link href="/tags">Tags</Link>
         <Link href="/admin">Admin</Link>
         <button
           type="button"

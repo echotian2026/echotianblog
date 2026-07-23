@@ -463,6 +463,99 @@ a.inline-link:hover {
 :root.light .essay-body span[data-color="pink"] { color: #be185d; }
 :root.light .essay-body span[data-color="purple"] { color: #7e22ce; }
 
+.post-tags {
+  margin-top: 1.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+}
+
+.post-tag {
+  padding: .28rem .52rem;
+  border: 1px solid rgba(192, 132, 252, .22);
+  border-radius: 999px;
+  background: rgba(168, 85, 247, .07);
+  color: var(--accent-bright);
+  font: .68rem var(--font-geist-mono), monospace;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.post-tag:hover {
+  border-color: rgba(192, 132, 252, .55);
+  background: rgba(168, 85, 247, .14);
+}
+
+.essay-tags-editor {
+  margin-top: 1.2rem;
+  max-width: 28rem;
+}
+
+.essay-tags-editor label,
+.essay-tags-editor small,
+.field-hint {
+  display: block;
+}
+
+.essay-tags-editor label {
+  margin-bottom: .4rem;
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.essay-tags-editor input {
+  width: 100%;
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  background: rgba(255,255,255,.025);
+  color: var(--foreground);
+}
+
+.essay-tags-editor small,
+.field-hint {
+  margin-top: .35rem;
+  color: var(--subtle);
+  font-size: .66rem;
+}
+
+.tag-cloud {
+  margin: 2.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  list-style: none;
+}
+
+.tag-cloud a {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: .55rem;
+  color: var(--accent-bright);
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.tag-cloud a:hover {
+  border-color: rgba(192, 132, 252, .5);
+  background: rgba(168, 85, 247, .08);
+}
+
+.tag-cloud small,
+.manage-tags {
+  color: var(--subtle);
+  font: .64rem var(--font-geist-mono), monospace;
+}
+
+.manage-tags {
+  display: block;
+  margin-top: .4rem;
+}
+
 .intro { padding: 6.75rem 0 6rem; }
 .eyebrow {
   margin: 0 0 1.2rem;
