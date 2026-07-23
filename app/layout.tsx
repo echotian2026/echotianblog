@@ -31,23 +31,23 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s · Purple Journal",
     },
     description:
-      "A quiet corner for notes, reflections, and thoughts worth keeping.",
+      "Notes on financial markets, artificial intelligence, products, and decision-making.",
     icons: {
       icon: "/favicon.png",
       shortcut: "/favicon.png",
     },
     openGraph: {
-      title: "Purple Journal",
+      title: "Echo",
       description:
-        "A quiet corner for notes, reflections, and thoughts worth keeping.",
-      images: ["/og.png"],
+        "Notes on financial markets, artificial intelligence, products, and decision-making.",
+      images: ["/og-v2.png"],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Purple Journal",
+      title: "Echo",
       description:
-        "A quiet corner for notes, reflections, and thoughts worth keeping.",
-      images: ["/og.png"],
+        "Notes on financial markets, artificial intelligence, products, and decision-making.",
+      images: ["/og-v2.png"],
     },
   };
 }
@@ -66,7 +66,7 @@ export default function RootLayout({
           <SiteHeader />
           <main>{children}</main>
           <footer>
-            <span>Thoughtfully kept.</span>
+            <span>Shanghai</span>
             <span>{new Date().getFullYear()}</span>
           </footer>
         </div>

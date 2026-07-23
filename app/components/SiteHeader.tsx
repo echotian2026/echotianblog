@@ -22,10 +22,8 @@ export function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="Purple Journal home">
-        Purple Journal
-      </Link>
       <nav className="nav-links" aria-label="Primary navigation">
+        <Link href="/" aria-label="Home">Home</Link>
         <Link href="/admin">Admin</Link>
         <button
           type="button"
