@@ -535,12 +535,34 @@ footer {
 }
 
 .article { padding: 5rem 0 6rem; }
+.article-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
 .back-link, .text-button {
   color: var(--muted);
   font-size: .84rem;
   transition: color 150ms ease;
 }
 .back-link:hover, .text-button:hover { color: var(--accent-bright); }
+.share-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: .78rem var(--font-geist-sans), sans-serif;
+  text-decoration: underline;
+  text-decoration-color: rgba(192, 132, 252, .45);
+  text-underline-offset: .22em;
+  cursor: pointer;
+  transition: color 150ms ease, text-decoration-color 150ms ease;
+}
+.share-link:hover {
+  color: var(--accent-bright);
+  text-decoration-color: var(--accent);
+}
 .article-header { padding: 4.5rem 0 3.2rem; border-bottom: 1px solid var(--line); }
 .article-header h1 { font-size: clamp(2.4rem, 8vw, 4rem); }
 .article-header time {

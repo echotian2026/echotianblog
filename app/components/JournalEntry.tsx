@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ShareButton } from "./ShareButton";
 
 type Mood = "sad" | "neutral" | "happy";
 
@@ -68,7 +69,10 @@ export function JournalEntry({
 
   return (
     <article className="article journal-entry">
-      <Link href={backHref} className="back-link">← Journal</Link>
+      <div className="article-topbar">
+        <Link href={backHref} className="back-link">← Journal</Link>
+        <ShareButton title={title} />
+      </div>
       <header className="article-header">
         <div className="entry-meta">
           <time dateTime={publishedAt} className="entry-date">

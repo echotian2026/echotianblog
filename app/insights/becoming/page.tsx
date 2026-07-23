@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EntryFooter } from "@/app/components/JournalEntry";
+import { ShareButton } from "@/app/components/ShareButton";
 
 export const metadata: Metadata = {
   title: "成为自己想成为的人",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function BecomingPage() {
   return (
     <article className="essay">
-      <Link href="/insights" className="back-link">← Insights</Link>
+      <div className="article-topbar">
+        <Link href="/insights" className="back-link">← Insights</Link>
+        <ShareButton title="成为自己想成为的人" />
+      </div>
       <header>
         <p className="eyebrow">A note to myself</p>
         <h1>成为自己想成为的人</h1>

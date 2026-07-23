@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EntryFooter } from "@/app/components/JournalEntry";
+import { ShareButton } from "@/app/components/ShareButton";
 
 export const metadata: Metadata = {
   title: "The things I’ve been grateful for",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function GratitudePage() {
   return (
     <article className="essay">
-      <Link href="/insights" className="back-link">← Insights</Link>
+      <div className="article-topbar">
+        <Link href="/insights" className="back-link">← Insights</Link>
+        <ShareButton title="The things I’ve been grateful for" />
+      </div>
       <header>
         <p className="eyebrow">A note to myself</p>
         <h1>The things I’ve been grateful for</h1>
