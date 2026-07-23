@@ -1,12 +1,8 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 32 32"
-  role="img"
-  aria-label="Echo Tian"
->
-  <rect width="32" height="32" rx="8" fill="#1e1035" />
-  <path
-    fill="#ffffff"
-    d="M10 8h13v4H14v2h8v4h-8v2h9v4H10V8Z"
-  />
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#0C0714"/>
+  <circle cx="16" cy="16" r="3" fill="#A855F7"/>
+  <path d="M16 8C11.5817 8 8 11.5817 8 16" stroke="#C084FC" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M16 24C20.4183 24 24 20.4183 24 16" stroke="#C084FC" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M16 4C9.37258 4 4 9.37258 4 16" stroke="#A855F7" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"/>
+  <path d="M16 28C22.6274 28 28 22.6274 28 16" stroke="#A855F7" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"/>
 </svg>
