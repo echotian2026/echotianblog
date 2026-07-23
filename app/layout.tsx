@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
+import { MottoFooter } from "./components/MottoFooter";
 import { SiteHeader } from "./components/SiteHeader";
 import "./globals.css";
 
@@ -63,10 +64,7 @@ export default function RootLayout({
         <div className="site-shell">
           <SiteHeader />
           <main>{children}</main>
-          <footer>
-            <span>Shanghai</span>
-            <span>{new Date().getFullYear()}</span>
-          </footer>
+          <MottoFooter />
         </div>
       </body>
     </html>

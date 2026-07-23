@@ -35,7 +35,7 @@ const freshDraft = (): Draft => ({
     .toISOString()
     .slice(0, 16),
   mood: "neutral",
-  isPrivate: true,
+  isPrivate: false,
 });
 
 function localDate(value: string) {
@@ -391,11 +391,21 @@ export function AdminDashboard() {
             {saveState === "saved" && `Saved${savedAt ? ` at ${savedAt}` : ""}`}
             {saveState === "error" && "Save interrupted"}
           </span>
-          {editing && !draft.isPrivate && (
-            <Link href={`/posts/${editing.slug}`} className="inline-link">
-              View entry
-            </Link>
-          )}
+          <div className="autosave-actions">
+            {editing && !draft.isPrivate && (
+              <Link href={`/posts/${editing.slug}`} className="inline-link">
+                View entry
+              </Link>
+            )}
+            <button
+              type="button"
+              className={`visibility-button ${draft.isPrivate ? "private" : "public"}`}
+              onClick={() => setDraft({ ...draft, isPrivate: !draft.isPrivate })}
+              aria-pressed={draft.isPrivate}
+            >
+              {draft.isPrivate ? "🔒 Private" : "🌐 Public"}
+            </button>
+          </div>
         </div>
 
         <label htmlFor="title">Title</label>
@@ -509,7 +519,7 @@ export function AdminDashboard() {
           corrections come from your browser and operating system.
         </p>
 
-        <div className="editor-row">
+        <div className="editor-row single">
           <div>
             <label htmlFor="publishedAt">Date & time</label>
             <input
@@ -521,20 +531,6 @@ export function AdminDashboard() {
               }
             />
           </div>
-          <label className="privacy-control">
-            <input
-              type="checkbox"
-              checked={draft.isPrivate}
-              onChange={(event) =>
-                setDraft({ ...draft, isPrivate: event.target.checked })
-              }
-            />
-            <span className="switch" aria-hidden="true"><span /></span>
-            <span>
-              <strong>Keep this entry private</strong>
-              <small>New entries start private for safer autosaving</small>
-            </span>
-          </label>
         </div>
 
         {message && <p className="form-message error">{message}</p>}
