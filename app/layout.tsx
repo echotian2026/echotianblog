@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   },
   description: "Personal journal, thoughts, and essays by Echo Tian.",
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
   },
   openGraph: {
     title: "Echo Tian Blog",

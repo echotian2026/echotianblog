@@ -1,0 +1,12 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 32 32"
+  role="img"
+  aria-label="Echo Tian"
+>
+  <rect width="32" height="32" rx="8" fill="#1e1035" />
+  <path
+    fill="#ffffff"
+    d="M10 8h13v4H14v2h8v4h-8v2h9v4H10V8Z"
+  />
+</svg>
