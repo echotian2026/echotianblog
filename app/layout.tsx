@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import { MottoFooter } from "./components/MottoFooter";
 import { SiteHeader } from "./components/SiteHeader";
 import "./globals.css";
@@ -15,41 +14,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host");
-  const protocol =
-    requestHeaders.get("x-forwarded-proto") ||
-    (host?.includes("localhost") ? "http" : "https");
-  const metadataBase = new URL(
-    host ? `${protocol}://${host}` : "http://localhost:3000"
-  );
-
-  return {
-    metadataBase,
-    title: {
-      default: "Purple Journal",
-      template: "%s · Purple Journal",
-    },
-    description:
-      "一些我在生活中看过、想过、做过，且想表达的东西。",
-    icons: {
-      icon: "/favicon.png",
-      shortcut: "/favicon.png",
-    },
-    openGraph: {
-      title: "Echo",
-      description:
-        "一些我在生活中看过、想过、做过，且想表达的东西。",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Echo",
-      description:
-        "一些我在生活中看过、想过、做过，且想表达的东西。",
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: {
+    default: "Echo Tian Blog",
+    template: "%s_echo_tian",
+  },
+  description: "Personal journal, thoughts, and essays by Echo Tian.",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+  },
+  openGraph: {
+    title: "Echo Tian Blog",
+    description: "Personal journal, thoughts, and essays by Echo Tian.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Echo Tian Blog",
+    description: "Personal journal, thoughts, and essays by Echo Tian.",
+  },
+};
 
 export default function RootLayout({
   children,
