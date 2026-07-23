@@ -16,3 +16,9 @@ export const posts = sqliteTable("posts", {
     .default(false),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const homepageContent = sqliteTable("homepage_content", {
+  id: integer("id").primaryKey(),
+  content: text("content").notNull(),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
