@@ -55,6 +55,9 @@ export function EditableInsight({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState<"image" | "audio" | null>(null);
+  const [editorInitialBody, setEditorInitialBody] = useState(
+    initialContent[bodyKey]
+  );
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -71,8 +74,8 @@ export function EditableInsight({
 
   useEffect(() => {
     if (!editing || !editorRef.current) return;
-    editorRef.current.innerHTML = content[bodyKey];
-  }, [bodyKey, editing]);
+    editorRef.current.innerHTML = editorInitialBody;
+  }, [editing, editorInitialBody]);
 
   const save = useCallback(async (nextContent: HomepageContent) => {
     const snapshot = JSON.stringify(nextContent);
@@ -234,6 +237,7 @@ export function EditableInsight({
                   type="button"
                   onClick={() => {
                     setSaveState("saved");
+                    setEditorInitialBody(content[bodyKey]);
                     setEditing(true);
                   }}
                 >

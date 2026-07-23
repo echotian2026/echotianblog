@@ -7,10 +7,13 @@ export function SiteHeader() {
   const [light, setLight] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("journal-theme");
-    const nextLight = saved === "light";
-    setLight(nextLight);
-    document.documentElement.classList.toggle("light", nextLight);
+    const timer = window.setTimeout(() => {
+      const saved = localStorage.getItem("journal-theme");
+      const nextLight = saved === "light";
+      setLight(nextLight);
+      document.documentElement.classList.toggle("light", nextLight);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   function toggleTheme() {

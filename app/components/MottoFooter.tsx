@@ -9,7 +9,10 @@ export function MottoFooter() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    setIndex(Math.floor(Math.random() * mottos.length));
+    const timer = window.setTimeout(() => {
+      setIndex(Math.floor(Math.random() * mottos.length));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const motto = mottos[index];
