@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  FormEvent,
   useCallback,
   useEffect,
   useRef,
@@ -20,8 +19,6 @@ export function EditableHomepage({
   const [content, setContent] = useState(initialContent);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [editing, setEditing] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const lastSavedRef = useRef(JSON.stringify(initialContent));
@@ -81,41 +78,8 @@ export function EditableHomepage({
     setContent((current) => ({ ...current, [key]: value }));
   }
 
-  async function beginEditing() {
-    if (authenticated) {
-      setEditing(true);
-      setSaveState("saved");
-      return;
-    }
-    if (authenticated === null) {
-      const response = await fetch("/api/admin/session", { cache: "no-store" });
-      const data = (await response.json()) as { authenticated: boolean };
-      setAuthenticated(data.authenticated);
-      if (data.authenticated) {
-        setEditing(true);
-        setSaveState("saved");
-        return;
-      }
-    }
-    setShowLogin(true);
-  }
-
-  async function login(event: FormEvent) {
-    event.preventDefault();
-    setMessage("");
-    const response = await fetch("/api/admin/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const data = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setMessage(data.error ?? "That password isn’t right.");
-      return;
-    }
-    setPassword("");
-    setAuthenticated(true);
-    setShowLogin(false);
+  function beginEditing() {
+    if (!authenticated) return;
     setEditing(true);
     setSaveState("saved");
   }
@@ -140,33 +104,12 @@ export function EditableHomepage({
               Done
             </button>
           </>
-        ) : !showLogin ? (
-          <button type="button" onClick={() => void beginEditing()}>
+        ) : authenticated ? (
+          <button type="button" onClick={beginEditing}>
             Edit homepage
           </button>
         ) : null}
       </div>
-
-      {showLogin && (
-        <form className="homepage-login" onSubmit={login}>
-          <label htmlFor="homepage-password">Admin password</label>
-          <div>
-            <input
-              id="homepage-password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoFocus
-              required
-            />
-            <button type="submit">Unlock</button>
-            <button type="button" onClick={() => setShowLogin(false)}>
-              Cancel
-            </button>
-          </div>
-          {message && <p>{message}</p>}
-        </form>
-      )}
 
       <section className="bio" aria-label="About me">
         {editing ? (
