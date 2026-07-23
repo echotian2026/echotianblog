@@ -7,6 +7,8 @@ create table if not exists public.posts (
   title text not null,
   content text not null default '',
   published_at timestamptz not null default now(),
+  mood text not null default 'neutral'
+    check (mood in ('sad', 'neutral', 'happy')),
   is_private boolean not null default false,
   created_at timestamptz not null default now()
 );

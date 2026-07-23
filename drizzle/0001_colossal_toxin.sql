@@ -1,0 +1,1 @@
+ALTER TABLE `posts` ADD `mood` text DEFAULT 'neutral' NOT NULL;

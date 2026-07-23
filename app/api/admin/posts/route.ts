@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     title?: string;
     content?: string;
     publishedAt?: string;
+    mood?: "sad" | "neutral" | "happy";
     isPrivate?: boolean;
   };
   const title = payload.title?.trim() ?? "";
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     title,
     content: payload.content ?? "",
     publishedAt: payload.publishedAt || new Date().toISOString(),
+    mood: payload.mood ?? "neutral",
     isPrivate: Boolean(payload.isPrivate),
   });
   return Response.json({ post }, { status: 201 });

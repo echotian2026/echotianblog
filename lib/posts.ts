@@ -8,6 +8,7 @@ export type PostInput = {
   slug?: string;
   content: string;
   publishedAt: string;
+  mood: "sad" | "neutral" | "happy";
   isPrivate: boolean;
 };
 
@@ -16,8 +17,8 @@ let schemaReady: Promise<void> | null = null;
 async function ensureSchema() {
   if (!schemaReady) {
     const d1 = getD1();
-    schemaReady = d1
-      .batch([
+    schemaReady = (async () => {
+      await d1.batch([
         d1.prepare(`
           CREATE TABLE IF NOT EXISTS posts (
             id TEXT PRIMARY KEY NOT NULL,
@@ -25,6 +26,7 @@ async function ensureSchema() {
             title TEXT NOT NULL,
             content TEXT NOT NULL DEFAULT '',
             published_at TEXT NOT NULL,
+            mood TEXT NOT NULL DEFAULT 'neutral',
             is_private INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
@@ -32,8 +34,17 @@ async function ensureSchema() {
         d1.prepare(
           "CREATE INDEX IF NOT EXISTS posts_published_at_idx ON posts (published_at DESC)"
         ),
-      ])
-      .then(() => undefined);
+      ]);
+
+      const columns = await d1.prepare("PRAGMA table_info(posts)").all<{
+        name: string;
+      }>();
+      if (!columns.results.some((column) => column.name === "mood")) {
+        await d1
+          .prepare("ALTER TABLE posts ADD COLUMN mood TEXT NOT NULL DEFAULT 'neutral'")
+          .run();
+      }
+    })();
   }
   return schemaReady;
 }
@@ -102,6 +113,7 @@ export async function createPost(input: PostInput) {
       title: input.title,
       content: input.content,
       publishedAt: input.publishedAt,
+      mood: input.mood,
       isPrivate: input.isPrivate,
     })
     .returning();
@@ -134,6 +146,7 @@ export async function updatePost(id: string, input: Partial<PostInput>) {
       ...(input.publishedAt !== undefined
         ? { publishedAt: input.publishedAt }
         : {}),
+      ...(input.mood !== undefined ? { mood: input.mood } : {}),
       ...(input.isPrivate !== undefined
         ? { isPrivate: input.isPrivate }
         : {}),

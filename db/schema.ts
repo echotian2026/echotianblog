@@ -7,6 +7,9 @@ export const posts = sqliteTable("posts", {
   title: text("title").notNull(),
   content: text("content").notNull().default(""),
   publishedAt: text("published_at").notNull(),
+  mood: text("mood", { enum: ["sad", "neutral", "happy"] })
+    .notNull()
+    .default("neutral"),
   isPrivate: integer("is_private", { mode: "boolean" })
     .notNull()
     .default(false),

@@ -26,6 +26,12 @@ export default async function JournalPage() {
 
       {posts.length ? (
         <ul className="directory-list">
+          <li>
+            <Link href="/journal/example" className="inline-link">
+              Entry page preview
+            </Link>
+            <time dateTime="2026-07-23">Jul 23, 2026</time>
+          </li>
           {posts.map((post) => (
             <li key={post.id}>
               <Link href={`/posts/${post.slug}`} className="inline-link">
@@ -36,7 +42,14 @@ export default async function JournalPage() {
           ))}
         </ul>
       ) : (
-        <p className="directory-empty">第一篇还在路上。</p>
+        <ul className="directory-list">
+          <li>
+            <Link href="/journal/example" className="inline-link">
+              Entry page preview
+            </Link>
+            <time dateTime="2026-07-23">Jul 23, 2026</time>
+          </li>
+        </ul>
       )}
     </section>
   );

@@ -15,6 +15,7 @@ export async function PATCH(
     title?: string;
     content?: string;
     publishedAt?: string;
+    mood?: "sad" | "neutral" | "happy";
     isPrivate?: boolean;
   };
   const post = await updatePost(id, payload);

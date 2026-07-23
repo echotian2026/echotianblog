@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { getPublicPost } from "@/lib/posts";
+import { JournalEntry } from "@/app/components/JournalEntry";
 
 export const dynamic = "force-dynamic";
 
@@ -14,14 +16,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return post ? { title: post.title } : { title: "Entry not found" };
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(value));
-}
+const journalSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "mark"],
+  attributes: {
+    ...defaultSchema.attributes,
+    mark: ["dataColor"],
+  },
+};
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
@@ -29,16 +31,32 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <article className="article">
-      <Link href="/" className="back-link">← All entries</Link>
-      <header className="article-header">
-        <p className="eyebrow">Journal entry</p>
-        <h1>{post.title}</h1>
-        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-      </header>
-      <div className="prose prose-purple dark:prose-invert">
-        <Markdown>{post.content}</Markdown>
-      </div>
-    </article>
+    <JournalEntry
+      title={post.title}
+      publishedAt={post.publishedAt}
+      mood={post.mood}
+    >
+      <Markdown
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, journalSchema]]}
+        components={{
+          a({ href, children, ...props }) {
+            const label = String(children);
+            if (href && label.startsWith("audio:")) {
+              return (
+                <figure className="audio-attachment">
+                  <audio controls preload="metadata" src={href}>
+                    Your browser does not support audio playback.
+                  </audio>
+                  <figcaption>{label.replace(/^audio:/, "")}</figcaption>
+                </figure>
+              );
+            }
+            return <a href={href} {...props}>{children}</a>;
+          },
+        }}
+      >
+        {post.content}
+      </Markdown>
+    </JournalEntry>
   );
 }

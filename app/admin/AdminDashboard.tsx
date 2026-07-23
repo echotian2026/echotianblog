@@ -1,15 +1,32 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { JournalPost } from "@/lib/posts";
 
+type Mood = "sad" | "neutral" | "happy";
 type Draft = {
   id?: string;
   title: string;
   content: string;
   publishedAt: string;
+  mood: Mood;
   isPrivate: boolean;
 };
+
+const moods: Array<{ value: Mood; emoji: string; label: string }> = [
+  { value: "sad", emoji: "☹️", label: "不开心" },
+  { value: "neutral", emoji: "😐", label: "一般" },
+  { value: "happy", emoji: "😊", label: "开心" },
+];
 
 const freshDraft = (): Draft => ({
   title: "",
@@ -17,7 +34,8 @@ const freshDraft = (): Draft => ({
   publishedAt: new Date(Date.now() - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16),
-  isPrivate: false,
+  mood: "neutral",
+  isPrivate: true,
 });
 
 function localDate(value: string) {
@@ -35,6 +53,17 @@ function displayDate(value: string) {
   }).format(new Date(value));
 }
 
+function snapshot(draft: Draft) {
+  return JSON.stringify({
+    id: draft.id,
+    title: draft.title,
+    content: draft.content,
+    publishedAt: draft.publishedAt,
+    mood: draft.mood,
+    isPrivate: draft.isPrivate,
+  });
+}
+
 export function AdminDashboard() {
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -42,7 +71,15 @@ export function AdminDashboard() {
   const [posts, setPosts] = useState<JournalPost[]>([]);
   const [draft, setDraft] = useState<Draft>(freshDraft);
   const [message, setMessage] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [savedAt, setSavedAt] = useState("");
+  const [uploading, setUploading] = useState<"image" | "audio" | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const lastSavedRef = useRef("");
 
   const loadPosts = useCallback(async () => {
     const response = await fetch("/api/admin/posts", { cache: "no-store" });
@@ -63,6 +100,69 @@ export function AdminDashboard() {
         if (data.authenticated) await loadPosts();
       });
   }, [loadPosts]);
+
+  useEffect(() => {
+    if (!authenticated || !draft.title.trim()) {
+      if (!draft.title.trim()) setSaveState("idle");
+      return;
+    }
+
+    const currentSnapshot = snapshot(draft);
+    if (currentSnapshot === lastSavedRef.current) return;
+
+    const timer = window.setTimeout(async () => {
+      const savingDraft = draft;
+      setSaveState("saving");
+      setMessage("");
+
+      try {
+        const response = await fetch(
+          savingDraft.id
+            ? `/api/admin/posts/${savingDraft.id}`
+            : "/api/admin/posts",
+          {
+            method: savingDraft.id ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: savingDraft.title,
+              content: savingDraft.content,
+              publishedAt: new Date(savingDraft.publishedAt).toISOString(),
+              mood: savingDraft.mood,
+              isPrivate: savingDraft.isPrivate,
+            }),
+          }
+        );
+        const data = (await response.json()) as {
+          post?: JournalPost;
+          error?: string;
+        };
+        if (!response.ok || !data.post) {
+          throw new Error(data.error ?? "Unable to save this entry.");
+        }
+
+        const savedDraft = { ...savingDraft, id: data.post.id };
+        lastSavedRef.current = snapshot(savedDraft);
+        if (!savingDraft.id) {
+          setDraft((current) => ({ ...current, id: data.post?.id }));
+        }
+        setSaveState("saved");
+        setSavedAt(
+          new Intl.DateTimeFormat("en", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(new Date())
+        );
+        await loadPosts();
+      } catch (error) {
+        setSaveState("error");
+        setMessage(
+          error instanceof Error ? error.message : "Unable to save this entry."
+        );
+      }
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [authenticated, draft, loadPosts]);
 
   const editing = useMemo(
     () => posts.find((post) => post.id === draft.id),
@@ -87,43 +187,125 @@ export function AdminDashboard() {
     await loadPosts();
   }
 
-  async function save(event: FormEvent) {
-    event.preventDefault();
-    setSaving(true);
-    setMessage("");
-    const response = await fetch(
-      draft.id ? `/api/admin/posts/${draft.id}` : "/api/admin/posts",
-      {
-        method: draft.id ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: draft.title,
-          content: draft.content,
-          publishedAt: new Date(draft.publishedAt).toISOString(),
-          isPrivate: draft.isPrivate,
-        }),
-      }
-    );
-    const data = (await response.json()) as { error?: string };
-    setSaving(false);
-    if (!response.ok) {
-      setMessage(data.error ?? "Unable to save this entry.");
-      return;
-    }
-    setDraft(freshDraft());
-    setMessage(draft.id ? "Entry updated." : "Entry saved.");
-    await loadPosts();
-  }
-
   function edit(post: JournalPost) {
-    setDraft({
+    const nextDraft: Draft = {
       id: post.id,
       title: post.title,
       content: post.content,
       publishedAt: localDate(post.publishedAt),
+      mood: post.mood,
       isPrivate: post.isPrivate,
-    });
+    };
+    lastSavedRef.current = snapshot(nextDraft);
+    setDraft(nextDraft);
+    setSaveState("saved");
+    setSavedAt("");
+    setMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function newEntry() {
+    lastSavedRef.current = "";
+    setDraft(freshDraft());
+    setSaveState("idle");
+    setSavedAt("");
+    setMessage("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function replaceSelection(
+    transform: (selected: string) => { text: string; selectStart?: number; selectEnd?: number }
+  ) {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const source = textarea.value;
+    const selected = source.slice(start, end);
+    const replacement = transform(selected);
+    const content =
+      source.slice(0, start) +
+      replacement.text +
+      source.slice(end);
+    setDraft((current) => ({ ...current, content }));
+
+    window.requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + (replacement.selectStart ?? replacement.text.length),
+        start + (replacement.selectEnd ?? replacement.text.length)
+      );
+    });
+  }
+
+  function wrapSelection(prefix: string, suffix: string) {
+    replaceSelection((selected) => ({
+      text: `${prefix}${selected || "text"}${suffix}`,
+      selectStart: prefix.length,
+      selectEnd: prefix.length + (selected || "text").length,
+    }));
+  }
+
+  function addBullets() {
+    replaceSelection((selected) => ({
+      text: (selected || "List item")
+        .split("\n")
+        .map((line) => `- ${line.replace(/^[-*]\s+/, "")}`)
+        .join("\n"),
+    }));
+  }
+
+  function addLink() {
+    const url = window.prompt("Paste a link");
+    if (!url) return;
+    replaceSelection((selected) => ({
+      text: `[${selected || "link text"}](${url})`,
+      selectStart: 1,
+      selectEnd: 1 + (selected || "link text").length,
+    }));
+  }
+
+  function insertText(text: string) {
+    replaceSelection(() => ({ text }));
+  }
+
+  async function uploadMedia(file: File, kind: "image" | "audio") {
+    setUploading(kind);
+    setMessage("");
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const response = await fetch("/api/admin/media", {
+        method: "POST",
+        body: form,
+      });
+      const data = (await response.json()) as {
+        url?: string;
+        name?: string;
+        error?: string;
+      };
+      if (!response.ok || !data.url) {
+        throw new Error(data.error ?? "Upload failed.");
+      }
+      insertText(
+        kind === "image"
+          ? `\n\n![${data.name ?? "image"}](${data.url})\n\n`
+          : `\n\n[audio:${data.name ?? "recording"}](${data.url})\n\n`
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Upload failed.");
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  function handleMedia(
+    event: ChangeEvent<HTMLInputElement>,
+    kind: "image" | "audio"
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) void uploadMedia(file, kind);
   }
 
   async function togglePrivacy(post: JournalPost) {
@@ -138,7 +320,7 @@ export function AdminDashboard() {
   async function remove(post: JournalPost) {
     if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
     await fetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
-    if (draft.id === post.id) setDraft(freshDraft());
+    if (draft.id === post.id) newEntry();
     await loadPosts();
   }
 
@@ -146,7 +328,7 @@ export function AdminDashboard() {
     await fetch("/api/admin/session", { method: "DELETE" });
     setAuthenticated(false);
     setPosts([]);
-    setDraft(freshDraft());
+    newEntry();
   }
 
   if (!authChecked) {
@@ -189,27 +371,143 @@ export function AdminDashboard() {
           <p className="eyebrow">Private workspace</p>
           <h1>{editing ? "Edit entry" : "New entry"}</h1>
         </div>
-        <button className="text-button" type="button" onClick={logout}>Lock journal</button>
+        <div className="admin-heading-actions">
+          {draft.id && (
+            <button className="text-button" type="button" onClick={newEntry}>
+              New entry
+            </button>
+          )}
+          <button className="text-button" type="button" onClick={logout}>
+            Lock journal
+          </button>
+        </div>
       </div>
 
-      <form className="editor" onSubmit={save}>
+      <div className="editor">
+        <div className="autosave-row">
+          <span>
+            {saveState === "idle" && "Start with a title — autosave will begin"}
+            {saveState === "saving" && "Saving…"}
+            {saveState === "saved" && `Saved${savedAt ? ` at ${savedAt}` : ""}`}
+            {saveState === "error" && "Save interrupted"}
+          </span>
+          {editing && !draft.isPrivate && (
+            <Link href={`/posts/${editing.slug}`} className="inline-link">
+              View entry
+            </Link>
+          )}
+        </div>
+
         <label htmlFor="title">Title</label>
         <input
           id="title"
           value={draft.title}
           onChange={(event) => setDraft({ ...draft, title: event.target.value })}
           placeholder="What’s on your mind?"
-          required
+          autoCorrect="on"
+          autoCapitalize="sentences"
+          spellCheck
         />
 
-        <label htmlFor="content">Entry <span>Markdown supported</span></label>
+        <fieldset className="mood-field">
+          <legend>How did today feel?</legend>
+          <div className="mood-options">
+            {moods.map((mood) => (
+              <label
+                key={mood.value}
+                className={draft.mood === mood.value ? "selected" : ""}
+              >
+                <input
+                  type="radio"
+                  name="mood"
+                  value={mood.value}
+                  checked={draft.mood === mood.value}
+                  onChange={() => setDraft({ ...draft, mood: mood.value })}
+                />
+                <span aria-hidden="true">{mood.emoji}</span>
+                <small>{mood.label}</small>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="editor-label-row">
+          <label htmlFor="content">Entry</label>
+          <span>Markdown + browser spellcheck</span>
+        </div>
+        <div className="editor-toolbar" role="toolbar" aria-label="Text formatting">
+          <button type="button" onClick={() => wrapSelection("**", "**")} title="Bold">
+            <strong>B</strong>
+          </button>
+          <button type="button" onClick={addBullets} title="Bullet list">• List</button>
+          <button type="button" onClick={addLink} title="Add link">Link</button>
+          <span className="toolbar-divider" />
+          <button
+            type="button"
+            className="highlight-dot yellow"
+            onClick={() => wrapSelection('<mark data-color="yellow">', "</mark>")}
+            title="Yellow highlight"
+            aria-label="Yellow highlight"
+          />
+          <button
+            type="button"
+            className="highlight-dot pink"
+            onClick={() => wrapSelection('<mark data-color="pink">', "</mark>")}
+            title="Pink highlight"
+            aria-label="Pink highlight"
+          />
+          <button
+            type="button"
+            className="highlight-dot purple"
+            onClick={() => wrapSelection('<mark data-color="purple">', "</mark>")}
+            title="Purple highlight"
+            aria-label="Purple highlight"
+          />
+          <span className="toolbar-divider" />
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={uploading !== null}
+          >
+            {uploading === "image" ? "Uploading…" : "Image"}
+          </button>
+          <button
+            type="button"
+            onClick={() => audioInputRef.current?.click()}
+            disabled={uploading !== null}
+          >
+            {uploading === "audio" ? "Uploading…" : "Audio"}
+          </button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => handleMedia(event, "image")}
+          />
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*"
+            hidden
+            onChange={(event) => handleMedia(event, "audio")}
+          />
+        </div>
         <textarea
+          ref={textareaRef}
           id="content"
           value={draft.content}
           onChange={(event) => setDraft({ ...draft, content: event.target.value })}
-          placeholder={"Begin here…\n\n## A thought worth keeping"}
-          rows={13}
+          placeholder={"Begin here…\n\nSelect text, then use the toolbar above."}
+          rows={16}
+          autoCorrect="on"
+          autoCapitalize="sentences"
+          spellCheck
         />
+        <p className="editor-help">
+          Select text before using Bold, Link, or a highlight color. English
+          corrections come from your browser and operating system.
+        </p>
 
         <div className="editor-row">
           <div>
@@ -221,7 +519,6 @@ export function AdminDashboard() {
               onChange={(event) =>
                 setDraft({ ...draft, publishedAt: event.target.value })
               }
-              required
             />
           </div>
           <label className="privacy-control">
@@ -233,22 +530,15 @@ export function AdminDashboard() {
               }
             />
             <span className="switch" aria-hidden="true"><span /></span>
-            <span><strong>Keep this entry private</strong><small>Only visible to me</small></span>
+            <span>
+              <strong>Keep this entry private</strong>
+              <small>New entries start private for safer autosaving</small>
+            </span>
           </label>
         </div>
 
-        <div className="editor-actions">
-          <button className="primary-button" type="submit" disabled={saving}>
-            {saving ? "Saving…" : draft.id ? "Update entry" : "Save entry"}
-          </button>
-          {draft.id && (
-            <button className="secondary-button" type="button" onClick={() => setDraft(freshDraft())}>
-              Cancel
-            </button>
-          )}
-          {message && <p className="form-message">{message}</p>}
-        </div>
-      </form>
+        {message && <p className="form-message error">{message}</p>}
+      </div>
 
       <section className="manage" aria-labelledby="manage-title">
         <div className="section-heading">
@@ -264,6 +554,9 @@ export function AdminDashboard() {
                     <span className={`status-badge ${post.isPrivate ? "private" : "public"}`}>
                       {post.isPrivate ? "🔒 Private" : "🌐 Public"}
                     </span>
+                    <span className="post-mood" aria-label={`Mood: ${post.mood}`}>
+                      {moods.find((mood) => mood.value === post.mood)?.emoji ?? "😐"}
+                    </span>
                     <time>{displayDate(post.publishedAt)}</time>
                   </div>
                   <strong>{post.title}</strong>
@@ -273,7 +566,9 @@ export function AdminDashboard() {
                   <button type="button" onClick={() => togglePrivacy(post)}>
                     Make {post.isPrivate ? "public" : "private"}
                   </button>
-                  <button type="button" className="danger" onClick={() => remove(post)}>Delete</button>
+                  <button type="button" className="danger" onClick={() => remove(post)}>
+                    Delete
+                  </button>
                 </div>
               </li>
             ))}
