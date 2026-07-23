@@ -4,6 +4,7 @@ export default function Home() {
   return (
     <div className="home-page">
       <section className="bio" aria-label="About me">
+        <h1 className="home-name">Echo Tian</h1>
         <p>
           hello，我是 Echo。这里放一些我在生活中看过、想过、做过，且想表达的东西，当作我来过这个世界的记录。
         </p>
