@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.echotianblog.com"),
   title: {
     default: "Echo Tian Blog",
     template: "%s_echo_tian",
@@ -27,6 +28,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Echo Tian Blog",
     description: "Personal journal, thoughts, and essays by Echo Tian.",
+    url: "https://www.echotianblog.com",
+    siteName: "Echo Tian",
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
