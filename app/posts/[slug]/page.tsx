@@ -18,10 +18,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const journalSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), "mark"],
+  tagNames: [...(defaultSchema.tagNames ?? []), "mark", "span"],
   attributes: {
     ...defaultSchema.attributes,
     mark: ["dataColor"],
+    span: ["dataColor"],
   },
 };
 
@@ -36,8 +37,8 @@ export default async function PostPage({ params }: Props) {
       publishedAt={post.publishedAt}
       mood={post.mood}
       city={post.city}
-      backHref={post.section === "work" ? "/work" : "/journal"}
-      backLabel={post.section === "work" ? "Work" : "Journal"}
+      backHref={post.section === "work" ? "/insights" : "/journal"}
+      backLabel={post.section === "work" ? "Insights" : "Journal"}
     >
       <Markdown
         rehypePlugins={[rehypeRaw, [rehypeSanitize, journalSchema]]}

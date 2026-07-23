@@ -201,17 +201,8 @@ export function EditableHomepage({
 
       <EditableSection
         editing={editing}
-        authenticated={authenticated === true}
         heading={content.writingHeading}
         onHeading={(value) => update("writingHeading", value)}
-        addHref="/admin?section=writing"
-        addLabel="New writing post"
-        dynamicEntries={publicPosts
-          .filter((post) => post.section === "writing")
-          .map((post) => ({
-            href: `/posts/${post.slug}`,
-            label: post.title,
-          }))}
         entries={[
           {
             href: "/journal",
@@ -222,33 +213,6 @@ export function EditableHomepage({
             href: "/insights",
             label: content.insightsLabel,
             onChange: (value) => update("insightsLabel", value),
-          },
-        ]}
-      />
-
-      <EditableSection
-        editing={editing}
-        authenticated={authenticated === true}
-        heading={content.workHeading}
-        onHeading={(value) => update("workHeading", value)}
-        addHref="/admin?section=work"
-        addLabel="New work post"
-        dynamicEntries={publicPosts
-          .filter((post) => post.section === "work")
-          .map((post) => ({
-            href: `/posts/${post.slug}`,
-            label: post.title,
-          }))}
-        entries={[
-          {
-            href: "/work/skills",
-            label: content.skillsLabel,
-            onChange: (value) => update("skillsLabel", value),
-          },
-          {
-            href: "/work/business",
-            label: content.businessLabel,
-            onChange: (value) => update("businessLabel", value),
           },
         ]}
       />
@@ -306,16 +270,11 @@ export function EditableHomepage({
 
 function EditableSection({
   editing,
-  authenticated,
   heading,
   onHeading,
   entries,
-  dynamicEntries,
-  addHref,
-  addLabel,
 }: {
   editing: boolean;
-  authenticated: boolean;
   heading: string;
   onHeading: (value: string) => void;
   entries: Array<{
@@ -323,9 +282,6 @@ function EditableSection({
     label: string;
     onChange: (value: string) => void;
   }>;
-  dynamicEntries: Array<{ href: string; label: string }>;
-  addHref: string;
-  addLabel: string;
 }) {
   return (
     <section className="text-section">
@@ -356,21 +312,6 @@ function EditableSection({
             )}
           </li>
         ))}
-        {!editing &&
-          dynamicEntries.map((entry) => (
-            <li key={entry.href}>
-              <Link href={entry.href} className="inline-link">
-                {entry.label}
-              </Link>
-            </li>
-          ))}
-        {!editing && authenticated && (
-          <li className="add-entry-item">
-            <Link href={addHref} className="add-entry-link">
-              + {addLabel}
-            </Link>
-          </li>
-        )}
       </ul>
     </section>
   );

@@ -83,7 +83,7 @@ export function AdminDashboard({
   >("idle");
   const [savedAt, setSavedAt] = useState("");
   const [uploading, setUploading] = useState<"image" | "audio" | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const lastSavedRef = useRef("");
@@ -109,10 +109,7 @@ export function AdminDashboard({
   }, [loadPosts]);
 
   useEffect(() => {
-    if (!authenticated || !draft.title.trim()) {
-      if (!draft.title.trim()) setSaveState("idle");
-      return;
-    }
+    if (!authenticated || !draft.title.trim()) return;
 
     const currentSnapshot = snapshot(draft);
     if (currentSnapshot === lastSavedRef.current) return;
@@ -177,6 +174,12 @@ export function AdminDashboard({
     [draft.id, posts]
   );
 
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || editor.innerHTML === draft.content) return;
+    editor.innerHTML = draft.content;
+  }, [draft.content, draft.id]);
+
   async function login(event: FormEvent) {
     event.preventDefault();
     setMessage("");
@@ -222,60 +225,59 @@ export function AdminDashboard({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function replaceSelection(
-    transform: (selected: string) => { text: string; selectStart?: number; selectEnd?: number }
-  ) {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const source = textarea.value;
-    const selected = source.slice(start, end);
-    const replacement = transform(selected);
-    const content =
-      source.slice(0, start) +
-      replacement.text +
-      source.slice(end);
+  function commitEditor() {
+    const content = editorRef.current?.innerHTML ?? "";
     setDraft((current) => ({ ...current, content }));
-
-    window.requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.setSelectionRange(
-        start + (replacement.selectStart ?? replacement.text.length),
-        start + (replacement.selectEnd ?? replacement.text.length)
-      );
-    });
   }
 
-  function wrapSelection(prefix: string, suffix: string) {
-    replaceSelection((selected) => ({
-      text: `${prefix}${selected || "text"}${suffix}`,
-      selectStart: prefix.length,
-      selectEnd: prefix.length + (selected || "text").length,
-    }));
+  function runEditorCommand(command: string, value?: string) {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+    document.execCommand(command, false, value);
+    commitEditor();
   }
 
-  function addBullets() {
-    replaceSelection((selected) => ({
-      text: (selected || "List item")
-        .split("\n")
-        .map((line) => `- ${line.replace(/^[-*]\s+/, "")}`)
-        .join("\n"),
-    }));
+  function colorSelection(color: "purple" | "pink" | "gold") {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (
+      range.collapsed ||
+      !editor.contains(range.commonAncestorContainer)
+    ) {
+      return;
+    }
+
+    const span = document.createElement("span");
+    span.dataset.color = color;
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+    selection.removeAllRanges();
+    const nextRange = document.createRange();
+    nextRange.selectNodeContents(span);
+    selection.addRange(nextRange);
+    commitEditor();
   }
 
   function addLink() {
     const url = window.prompt("Paste a link");
     if (!url) return;
-    replaceSelection((selected) => ({
-      text: `[${selected || "link text"}](${url})`,
-      selectStart: 1,
-      selectEnd: 1 + (selected || "link text").length,
-    }));
+    runEditorCommand("createLink", url);
   }
 
-  function insertText(text: string) {
-    replaceSelection(() => ({ text }));
+  function insertHtml(html: string) {
+    runEditorCommand("insertHTML", html);
+  }
+
+  function escapeHtml(value: string) {
+    return value
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
   }
 
   async function uploadMedia(file: File, kind: "image" | "audio") {
@@ -296,10 +298,12 @@ export function AdminDashboard({
       if (!response.ok || !data.url) {
         throw new Error(data.error ?? "Upload failed.");
       }
-      insertText(
+      const name = escapeHtml(data.name ?? (kind === "image" ? "image" : "recording"));
+      const url = escapeHtml(data.url);
+      insertHtml(
         kind === "image"
-          ? `\n\n![${data.name ?? "image"}](${data.url})\n\n`
-          : `\n\n[audio:${data.name ?? "recording"}](${data.url})\n\n`
+          ? `<p><img src="${url}" alt="${name}"></p><p><br></p>`
+          : `<p><a href="${url}">audio:${name}</a></p><p><br></p>`
       );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -375,27 +379,37 @@ export function AdminDashboard({
 
   return (
     <div className="admin">
-      <div className="admin-heading">
-        <div>
-          <p className="eyebrow">Private workspace</p>
-          <h1>{editing ? "Edit entry" : "New entry"}</h1>
-        </div>
-        <div className="admin-heading-actions">
-          {draft.id && (
-            <button className="text-button" type="button" onClick={() => newEntry()}>
-              New entry
-            </button>
-          )}
-          <button className="text-button" type="button" onClick={logout}>
-            Lock journal
+      <div className="admin-utility-row">
+        {draft.id && (
+          <button className="text-button" type="button" onClick={() => newEntry()}>
+            Add another entry
           </button>
-        </div>
+        )}
+        <button className="text-button" type="button" onClick={logout}>
+          Log out
+        </button>
       </div>
 
       <div className="editor">
+        <label htmlFor="title">Title</label>
+        <input
+          id="title"
+          value={draft.title}
+          onChange={(event) => {
+            const title = event.target.value;
+            setDraft({ ...draft, title });
+            if (!title.trim()) setSaveState("idle");
+          }}
+          placeholder="Title"
+          autoCorrect="on"
+          autoCapitalize="sentences"
+          spellCheck
+          autoFocus
+        />
+
         <div className="autosave-row">
           <span>
-            {saveState === "idle" && "Start with a title — autosave will begin"}
+            {saveState === "idle" && "Autosave begins when you add a title"}
             {saveState === "saving" && "Saving…"}
             {saveState === "saved" && `Saved${savedAt ? ` at ${savedAt}` : ""}`}
             {saveState === "error" && "Save interrupted"}
@@ -417,17 +431,6 @@ export function AdminDashboard({
           </div>
         </div>
 
-        <label htmlFor="title">Title</label>
-        <input
-          id="title"
-          value={draft.title}
-          onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-          placeholder="What’s on your mind?"
-          autoCorrect="on"
-          autoCapitalize="sentences"
-          spellCheck
-        />
-
         <div className="editor-row">
           <div>
             <label htmlFor="section">Show this post in</label>
@@ -441,8 +444,8 @@ export function AdminDashboard({
                 })
               }
             >
-              <option value="writing">My Writing</option>
-              <option value="work">My Work</option>
+              <option value="writing">Journal</option>
+              <option value="work">Insights</option>
             </select>
           </div>
         </div>
@@ -471,35 +474,57 @@ export function AdminDashboard({
 
         <div className="editor-label-row">
           <label htmlFor="content">Entry</label>
-          <span>Markdown + browser spellcheck</span>
+          <span>Rich text + browser spellcheck</span>
         </div>
         <div className="editor-toolbar" role="toolbar" aria-label="Text formatting">
-          <button type="button" onClick={() => wrapSelection("**", "**")} title="Bold">
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => runEditorCommand("bold")}
+            title="Bold"
+          >
             <strong>B</strong>
           </button>
-          <button type="button" onClick={addBullets} title="Bullet list">• List</button>
-          <button type="button" onClick={addLink} title="Add link">Link</button>
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => runEditorCommand("insertUnorderedList")}
+            title="Bullet list"
+          >
+            • List
+          </button>
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={addLink}
+            title="Add link"
+          >
+            Link
+          </button>
           <span className="toolbar-divider" />
           <button
             type="button"
-            className="highlight-dot yellow"
-            onClick={() => wrapSelection('<mark data-color="yellow">', "</mark>")}
-            title="Yellow highlight"
-            aria-label="Yellow highlight"
+            className="text-color-dot gold"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => colorSelection("gold")}
+            title="Gold text"
+            aria-label="Gold text"
           />
           <button
             type="button"
-            className="highlight-dot pink"
-            onClick={() => wrapSelection('<mark data-color="pink">', "</mark>")}
-            title="Pink highlight"
-            aria-label="Pink highlight"
+            className="text-color-dot pink"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => colorSelection("pink")}
+            title="Pink text"
+            aria-label="Pink text"
           />
           <button
             type="button"
-            className="highlight-dot purple"
-            onClick={() => wrapSelection('<mark data-color="purple">', "</mark>")}
-            title="Purple highlight"
-            aria-label="Purple highlight"
+            className="text-color-dot purple"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => colorSelection("purple")}
+            title="Purple text"
+            aria-label="Purple text"
           />
           <span className="toolbar-divider" />
           <button
@@ -531,20 +556,24 @@ export function AdminDashboard({
             onChange={(event) => handleMedia(event, "audio")}
           />
         </div>
-        <textarea
-          ref={textareaRef}
+        <div
+          ref={editorRef}
           id="content"
-          value={draft.content}
-          onChange={(event) => setDraft({ ...draft, content: event.target.value })}
-          placeholder={"Begin here…\n\nSelect text, then use the toolbar above."}
-          rows={16}
+          className="rich-text-editor"
+          contentEditable
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Entry"
+          data-placeholder="Begin here…"
+          onInput={commitEditor}
+          suppressContentEditableWarning
           autoCorrect="on"
           autoCapitalize="sentences"
           spellCheck
         />
         <p className="editor-help">
-          Select text before using Bold, Link, or a highlight color. English
-          corrections come from your browser and operating system.
+          Select text, then choose Bold or a text color. What you see here is
+          how it will appear in the published entry.
         </p>
 
         <div className="editor-row single">
@@ -579,7 +608,7 @@ export function AdminDashboard({
                       {post.isPrivate ? "🔒 Private" : "🌐 Public"}
                     </span>
                     <span className="section-badge">
-                      {post.section === "work" ? "My Work" : "My Writing"}
+                      {post.section === "work" ? "Insights" : "Journal"}
                     </span>
                     <span className="post-mood" aria-label={`Mood: ${post.mood}`}>
                       {moods.find((mood) => mood.value === post.mood)?.emoji ?? "😐"}

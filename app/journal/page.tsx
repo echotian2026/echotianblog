@@ -24,7 +24,7 @@ export default async function JournalPage() {
       <p className="directory-intro">
         一些生活里看过、想过、做过，且想表达的东西。
       </p>
-      <AdminEntryLink section="writing" label="New writing post" />
+      <AdminEntryLink section="writing" label="Add entry" />
 
       {posts.length ? (
         <ul className="directory-list">
