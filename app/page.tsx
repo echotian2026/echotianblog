@@ -10,18 +10,15 @@ export default async function Home() {
     <div className="home-page">
       <section className="bio" aria-label="About me">
         <p>
-          I’m Echo, a product builder working at the intersection of{" "}
-          <span className="inline-link">financial markets</span>,{" "}
-          <span className="inline-link">artificial intelligence</span>, and
-          everyday decision-making. I like turning complicated systems into
-          products that feel calm, useful, and easy to understand.
+          hello，我是 Echo。这里放一些我在生活中看过、想过、做过，且想表达的东西，当作我来过这个世界的记录。
         </p>
         <p>
-          I’m currently exploring how research tools can help people think more
-          clearly—not just move faster. Previously, I worked across product
-          strategy, customer operations, and commercialization. I’m based in
-          Shanghai and remain endlessly curious about markets, software, and
-          how people form conviction.
+          我追求自由，希望自己持续成长，持续建立内在安全感，也希望 always remind
+          myself of the things I’ve been grateful for。及时把自己从偶尔的崩溃和自我否定中拉出来；
+          要勇敢，要行动，尽量发挥主观能动性，把控生活中可选部分的选择权，成为自己想成为的人。
+        </p>
+        <p>
+          除了我是我自己，我还是女儿、妻子和母亲。我爱我的家人。
         </p>
       </section>
 

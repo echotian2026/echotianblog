@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s · Purple Journal",
     },
     description:
-      "Notes on financial markets, artificial intelligence, products, and decision-making.",
+      "一些我在生活中看过、想过、做过，且想表达的东西。",
     icons: {
       icon: "/favicon.png",
       shortcut: "/favicon.png",
@@ -39,14 +39,14 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Echo",
       description:
-        "Notes on financial markets, artificial intelligence, products, and decision-making.",
+        "一些我在生活中看过、想过、做过，且想表达的东西。",
       images: ["/og-v2.png"],
     },
     twitter: {
       card: "summary_large_image",
       title: "Echo",
       description:
-        "Notes on financial markets, artificial intelligence, products, and decision-making.",
+        "一些我在生活中看过、想过、做过，且想表达的东西。",
       images: ["/og-v2.png"],
     },
   };
@@ -58,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
