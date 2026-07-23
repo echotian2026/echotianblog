@@ -182,6 +182,78 @@ a.inline-link:hover {
   color: var(--subtle);
 }
 
+.contact-line {
+  margin: 4.75rem 0 0;
+  color: var(--muted);
+}
+
+.directory-page,
+.essay {
+  padding: 4.75rem 0 7rem;
+}
+
+.directory-page .eyebrow,
+.essay header .eyebrow {
+  margin-top: 4rem;
+}
+
+.directory-page h1,
+.essay h1 {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--foreground);
+  font-size: clamp(2.35rem, 7vw, 3.8rem);
+  font-weight: 575;
+  line-height: 1.05;
+  letter-spacing: -.055em;
+}
+
+.directory-intro {
+  max-width: 35rem;
+  margin: 1.5rem 0 3rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.directory-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.directory-list li {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.directory-list time {
+  flex: none;
+  color: var(--subtle);
+  font: .72rem var(--font-geist-mono), monospace;
+}
+
+.directory-empty {
+  color: var(--subtle);
+}
+
+.essay header {
+  margin-bottom: 3.25rem;
+}
+
+.essay-body {
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+
+.essay-body p {
+  margin: 0 0 1.55rem;
+}
+
 .intro { padding: 6.75rem 0 6rem; }
 .eyebrow {
   margin: 0 0 1.2rem;
@@ -464,6 +536,8 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
 @media (max-width: 639px) {
   .site-header { height: 4.8rem; }
   .home-page { padding-top: 3.5rem; }
+  .directory-page, .essay { padding-top: 3.5rem; }
+  .directory-list li { align-items: flex-start; flex-direction: column; gap: .2rem; margin-bottom: .9rem; }
   .intro { padding: 5.5rem 0 4.5rem; }
   .post-row { align-items: flex-start; flex-direction: column; gap: .35rem; padding-top: 1rem; padding-bottom: 1rem; }
   .article { padding-top: 3.5rem; }
