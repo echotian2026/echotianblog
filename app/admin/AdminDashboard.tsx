@@ -444,9 +444,13 @@ export function AdminDashboard({
                 })
               }
             >
-              <option value="writing">Journal</option>
-              <option value="insights">Insights</option>
-              <option value="work">My Work</option>
+              <optgroup label="My Writing">
+                <option value="writing">Journal</option>
+                <option value="insights">Insights</option>
+              </optgroup>
+              <optgroup label="My Work">
+                <option value="work">Work entry</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -610,10 +614,10 @@ export function AdminDashboard({
                     </span>
                     <span className="section-badge">
                       {post.section === "work"
-                        ? "My Work"
+                        ? "My Work · Entry"
                         : post.section === "insights"
-                          ? "Insights"
-                          : "Journal"}
+                          ? "My Writing · Insights"
+                          : "My Writing · Journal"}
                     </span>
                     <span className="post-mood" aria-label={`Mood: ${post.mood}`}>
                       {moods.find((mood) => mood.value === post.mood)?.emoji ?? "😐"}
