@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EntryFooter } from "@/app/components/JournalEntry";
 
 export const metadata: Metadata = {
   title: "The things I’ve been grateful for",
@@ -32,6 +33,10 @@ export default function GratitudePage() {
           再往前走一步。
         </p>
       </div>
+      <EntryFooter
+        publishedAt="2026-07-23T08:00:00.000Z"
+        city="Shanghai"
+      />
     </article>
   );
 }

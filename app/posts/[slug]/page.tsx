@@ -35,6 +35,7 @@ export default async function PostPage({ params }: Props) {
       title={post.title}
       publishedAt={post.publishedAt}
       mood={post.mood}
+      city={post.city}
     >
       <Markdown
         rehypePlugins={[rehypeRaw, [rehypeSanitize, journalSchema]]}

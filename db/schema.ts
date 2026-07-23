@@ -10,6 +10,7 @@ export const posts = sqliteTable("posts", {
   mood: text("mood", { enum: ["sad", "neutral", "happy"] })
     .notNull()
     .default("neutral"),
+  city: text("city").notNull().default("Shanghai"),
   isPrivate: integer("is_private", { mode: "boolean" })
     .notNull()
     .default(false),

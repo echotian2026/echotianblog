@@ -15,6 +15,13 @@
       "when": 1784784595725,
       "tag": "0001_colossal_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784786432555,
+      "tag": "0002_concerned_namora",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ export default function ExampleEntryPage() {
       title="A day worth remembering"
       publishedAt="2026-07-23T08:00:00.000Z"
       mood="happy"
+      city="Shanghai"
     >
       <p>
         这是文章详情页的示例。日期被拆分成年份、月日和星期，右侧会记录写下这篇日记时的心情。

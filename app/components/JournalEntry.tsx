@@ -31,16 +31,35 @@ function dateParts(value: string) {
   };
 }
 
+export function EntryFooter({
+  publishedAt,
+  city,
+}: {
+  publishedAt: string;
+  city: string;
+}) {
+  const age = new Date(publishedAt).getUTCFullYear() - 1988;
+
+  return (
+    <footer className="entry-footer">
+      <span>{city || "Shanghai"}</span>
+      <span>Age {age}</span>
+    </footer>
+  );
+}
+
 export function JournalEntry({
   title,
   publishedAt,
   mood,
+  city,
   backHref = "/journal",
   children,
 }: {
   title: string;
   publishedAt: string;
   mood: Mood;
+  city: string;
   backHref?: string;
   children: ReactNode;
 }) {
@@ -69,6 +88,7 @@ export function JournalEntry({
       <div className="prose prose-purple dark:prose-invert entry-prose">
         {children}
       </div>
+      <EntryFooter publishedAt={publishedAt} city={city} />
     </article>
   );
 }

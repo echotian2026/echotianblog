@@ -5,6 +5,20 @@ function unauthorized() {
   return Response.json({ error: "Unauthorized" }, { status: 401 });
 }
 
+function cityFromRequest(request: Request) {
+  const city =
+    request.headers.get("cf-ipcity") ||
+    request.headers.get("x-vercel-ip-city") ||
+    request.headers.get("x-appengine-city");
+
+  if (!city) return "Shanghai";
+  try {
+    return decodeURIComponent(city).trim() || "Shanghai";
+  } catch {
+    return city.trim() || "Shanghai";
+  }
+}
+
 export async function GET(request: Request) {
   if (!(await isAdminRequest(request))) return unauthorized();
   return Response.json({ posts: await listAllPosts() });
@@ -29,6 +43,7 @@ export async function POST(request: Request) {
     content: payload.content ?? "",
     publishedAt: payload.publishedAt || new Date().toISOString(),
     mood: payload.mood ?? "neutral",
+    city: cityFromRequest(request),
     isPrivate: Boolean(payload.isPrivate),
   });
   return Response.json({ post }, { status: 201 });

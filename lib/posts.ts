@@ -9,6 +9,7 @@ export type PostInput = {
   content: string;
   publishedAt: string;
   mood: "sad" | "neutral" | "happy";
+  city: string;
   isPrivate: boolean;
 };
 
@@ -27,6 +28,7 @@ async function ensureSchema() {
             content TEXT NOT NULL DEFAULT '',
             published_at TEXT NOT NULL,
             mood TEXT NOT NULL DEFAULT 'neutral',
+            city TEXT NOT NULL DEFAULT 'Shanghai',
             is_private INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
@@ -42,6 +44,11 @@ async function ensureSchema() {
       if (!columns.results.some((column) => column.name === "mood")) {
         await d1
           .prepare("ALTER TABLE posts ADD COLUMN mood TEXT NOT NULL DEFAULT 'neutral'")
+          .run();
+      }
+      if (!columns.results.some((column) => column.name === "city")) {
+        await d1
+          .prepare("ALTER TABLE posts ADD COLUMN city TEXT NOT NULL DEFAULT 'Shanghai'")
           .run();
       }
     })();
@@ -114,6 +121,7 @@ export async function createPost(input: PostInput) {
       content: input.content,
       publishedAt: input.publishedAt,
       mood: input.mood,
+      city: input.city,
       isPrivate: input.isPrivate,
     })
     .returning();

@@ -1,0 +1,1 @@
+ALTER TABLE `posts` ADD `city` text DEFAULT 'Shanghai' NOT NULL;

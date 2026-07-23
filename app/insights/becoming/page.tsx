@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EntryFooter } from "@/app/components/JournalEntry";
 
 export const metadata: Metadata = {
   title: "成为自己想成为的人",
@@ -31,6 +32,10 @@ export default function BecomingPage() {
           选择更接近那个自己的方向。
         </p>
       </div>
+      <EntryFooter
+        publishedAt="2026-07-23T08:00:00.000Z"
+        city="Shanghai"
+      />
     </article>
   );
 }
