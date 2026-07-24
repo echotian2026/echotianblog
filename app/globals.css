@@ -340,6 +340,280 @@ a.inline-link:hover {
   color: var(--muted);
 }
 
+.fitness-page {
+  padding: 4.75rem 0 7rem;
+}
+
+.fitness-heading {
+  max-width: 38rem;
+  margin-bottom: 3rem;
+}
+
+.fitness-heading .eyebrow {
+  margin-bottom: 1.1rem;
+}
+
+.fitness-heading h1 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: clamp(2.5rem, 8vw, 4.25rem);
+  font-weight: 575;
+  line-height: 1;
+  letter-spacing: -.06em;
+}
+
+.fitness-heading > p:last-child {
+  max-width: 34rem;
+  margin: 1.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.breathing-card {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(168, 85, 247, .13), transparent 16rem),
+    linear-gradient(145deg, rgba(26, 15, 43, .88), rgba(12, 7, 20, .7));
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .17);
+  text-align: center;
+}
+
+:root.light .breathing-card {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(168, 85, 247, .1), transparent 16rem),
+    linear-gradient(145deg, #fff, #f9f4ff);
+}
+
+.breathing-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--subtle);
+  font: .68rem var(--font-geist-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.breathing-orb {
+  width: min(46vw, 13rem);
+  aspect-ratio: 1;
+  margin: 3.1rem auto 2.55rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(192, 132, 252, .2);
+  border-radius: 50%;
+  background: rgba(168, 85, 247, .035);
+  box-shadow:
+    0 0 0 1.25rem rgba(168, 85, 247, .025),
+    0 0 5rem rgba(168, 85, 247, .11);
+  transform: scale(.78);
+}
+
+.breathing-orb.inhale {
+  animation: breathing-inhale 4s ease-in-out forwards;
+}
+
+.breathing-orb.exhale {
+  animation: breathing-exhale 10s ease-in-out forwards;
+}
+
+.breathing-orb.complete {
+  transform: scale(.9);
+}
+
+.breathing-orb-core {
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, #e9d5ff, #a855f7 48%, #581c87);
+  box-shadow:
+    0 0 2.5rem rgba(192, 132, 252, .38),
+    inset 0 0 1.2rem rgba(255, 255, 255, .18);
+}
+
+@keyframes breathing-inhale {
+  from { transform: scale(.78); }
+  to { transform: scale(1); }
+}
+
+@keyframes breathing-exhale {
+  from { transform: scale(1); }
+  to { transform: scale(.78); }
+}
+
+.breathing-phase {
+  min-height: 4.4rem;
+  display: grid;
+  justify-items: center;
+  gap: .5rem;
+}
+
+.breathing-phase strong {
+  color: var(--foreground);
+  font-size: 1.16rem;
+  font-weight: 580;
+  letter-spacing: -.02em;
+}
+
+.breathing-phase span {
+  color: var(--subtle);
+  font-size: .78rem;
+}
+
+.breathing-controls {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .7rem;
+}
+
+.breathing-controls .primary-button,
+.breathing-controls .secondary-button {
+  min-width: 11.5rem;
+}
+
+.voice-toggle {
+  min-height: 2.85rem;
+  padding: 0 .95rem;
+  border: 1px solid var(--line);
+  border-radius: .55rem;
+  background: transparent;
+  color: var(--subtle);
+  font-size: .76rem;
+  cursor: pointer;
+}
+
+.voice-toggle.active {
+  color: var(--accent-bright);
+  border-color: rgba(192, 132, 252, .35);
+  background: rgba(168, 85, 247, .07);
+}
+
+.voice-toggle:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.breathing-note,
+.fitness-message,
+.fitness-auth-note {
+  color: var(--subtle);
+  font-size: .72rem;
+  line-height: 1.6;
+}
+
+.breathing-note {
+  margin: 1.5rem 0 0;
+}
+
+.fitness-message {
+  margin: .7rem 0 0;
+  color: var(--accent-bright);
+}
+
+.fitness-progress,
+.fitness-history {
+  margin-top: 2.75rem;
+  padding-top: 2.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.fitness-section-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fitness-section-title .eyebrow {
+  margin-bottom: .7rem;
+}
+
+.fitness-section-title h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.15rem;
+  font-weight: 570;
+  letter-spacing: -.025em;
+}
+
+.fitness-section-title > span {
+  color: var(--subtle);
+  font: .66rem var(--font-geist-mono), monospace;
+}
+
+.session-dots,
+.history-dots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .55rem;
+}
+
+.session-dots {
+  margin-top: 1.35rem;
+}
+
+.session-dots span,
+.history-dots span {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.session-dots span {
+  height: .7rem;
+}
+
+.history-dots span {
+  width: .52rem;
+  height: .52rem;
+}
+
+.session-dots span.complete,
+.history-dots span.complete {
+  border-color: #a855f7;
+  background: #a855f7;
+  box-shadow: 0 0 .8rem rgba(168, 85, 247, .28);
+}
+
+.session-dots span.partial,
+.history-dots span.partial {
+  border-color: var(--accent);
+  background: linear-gradient(90deg, var(--accent) 50%, transparent 50%);
+}
+
+.fitness-auth-note {
+  margin: 1.2rem 0 0;
+}
+
+.fitness-history ul {
+  margin: 1.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fitness-history li {
+  min-height: 2.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.fitness-history time {
+  color: var(--muted);
+  font-size: .76rem;
+}
+
 .directory-page,
 .essay {
   padding: 4.75rem 0 7rem;
@@ -1204,6 +1478,8 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
 @media (max-width: 639px) {
   .site-header { height: 4.8rem; }
   .home-page { padding-top: 3.5rem; }
+  .fitness-page { padding-top: 3.5rem; }
+  .breathing-card { margin: 0 -.2rem; }
   .directory-page, .essay { padding-top: 3.5rem; }
   .directory-list li { align-items: flex-start; flex-direction: column; gap: .2rem; margin-bottom: .9rem; }
   .intro { padding: 5.5rem 0 4.5rem; }
@@ -1226,4 +1502,6 @@ input::placeholder, textarea::placeholder { color: var(--subtle); }
 
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  .breathing-orb.inhale { animation: none; transform: scale(1); }
+  .breathing-orb.exhale { animation: none; transform: scale(.78); }
 }

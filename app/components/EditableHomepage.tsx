@@ -234,6 +234,20 @@ export function EditableHomepage({
         entries={[]}
       />
 
+      <EditableSection
+        editing={editing}
+        authenticated={authenticated === true}
+        heading={content.fitnessHeading}
+        onHeading={(value) => update("fitnessHeading", value)}
+        entries={[
+          {
+            href: "/fitness",
+            label: content.breathingLabel,
+            onChange: (value) => update("breathingLabel", value),
+          },
+        ]}
+      />
+
       {editing ? (
         <div className="contact-line homepage-contact-editor">
           <input

@@ -67,6 +67,29 @@ create policy "Public can read homepage content"
   to anon, authenticated
   using (id = 1);
 
+create table if not exists public.fitness_sessions (
+  id uuid primary key default gen_random_uuid(),
+  practiced_on date not null default current_date,
+  session_number smallint not null
+    check (session_number between 1 and 5),
+  rounds_completed smallint not null default 0
+    check (rounds_completed between 0 and 10),
+  duration_seconds integer not null default 0
+    check (duration_seconds >= 0),
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (practiced_on, session_number)
+);
+
+create index if not exists fitness_sessions_practiced_on_idx
+  on public.fitness_sessions (practiced_on desc);
+
+alter table public.fitness_sessions enable row level security;
+
+-- No public policies are created for fitness_sessions. Only server-side
+-- service-role requests can read or update Echo's private practice history.
+
 insert into storage.buckets (id, name, public)
 values ('media', 'media', true)
 on conflict (id) do update set public = true;
