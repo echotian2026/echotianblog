@@ -662,6 +662,12 @@ a.inline-link:hover {
   font: .72rem var(--font-geist-mono), monospace;
 }
 
+.directory-item-note {
+  flex: none;
+  color: var(--subtle);
+  font: .72rem var(--font-geist-mono), monospace;
+}
+
 .directory-empty {
   color: var(--subtle);
 }

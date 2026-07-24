@@ -233,7 +233,13 @@ export function EditableHomepage({
           }))}
         addHref="/admin?section=work"
         addLabel="Add work entry"
-        entries={[]}
+        entries={[
+          {
+            href: "/work/acquisition-cases.html",
+            label: content.acquisitionCasesLabel,
+            onChange: (value) => update("acquisitionCasesLabel", value),
+          },
+        ]}
       />
 
       <EditableSection

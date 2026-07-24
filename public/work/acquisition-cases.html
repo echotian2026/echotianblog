@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="田畅的获客项目案例集">
+  <title>获客项目案例集 · Echo Tian</title>
+  <style>
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+
+:root {
+  --bg: #F7F8FA;
+  --bg2: #FFFFFF;
+  --ink: #1E293B;
+  --muted: #4B5563;
+  --rule: #E2E8F0;
+  --accent: #2563EB;
+  --accent-soft: #EFF6FF;
+  --accent-deep: #1D4ED8;
+  --kpi-num: #374151;
+  --c1: #E52E5A;
+  --c2: #FF6B12;
+  --c3: #4588BA;
+  --c4: #6B9959;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(30,41,59,.06), 0 4px 12px rgba(30,41,59,.04);
+  --shadow-md: 0 2px 8px rgba(30,41,59,.06), 0 8px 24px rgba(30,41,59,.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.65;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 56px 32px 80px;
+}
+
+/* ===== Header ===== */
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--accent);
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.page-header .divider {
+  color: var(--rule);
+  font-size: 20px;
+  font-weight: 300;
+}
+.page-header .name {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ===== Section ===== */
+.section {
+  background: var(--bg2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 1px solid var(--rule);
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.section-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.section-head .title-block h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.section-head .title-block .desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ===== KPI Grid ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.kpi-card {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+  border: 1px solid var(--rule);
+}
+.kpi-card .num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #2563EB;
+}
+.kpi-card .num .unit {
+  font-size: 13px;
+  font-weight: 600;
+}
+.kpi-card .label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.kpi-card .delta {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 3px;
+  color: #2563EB;
+}
+
+/* ===== Content cards ===== */
+.content-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.content-card {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+}
+.content-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+}
+.content-card h4 .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+
+.content-card ul {
+  padding-left: 16px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+.content-card li { margin-bottom: 3px; }
+.content-card li::marker { color: var(--accent); }
+.content-card strong { color: var(--ink); font-weight: 600; }
+
+/* ===== Mosaic image gallery ===== */
+.thumb-grid {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+.thumb-grid.g3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.thumb-grid.g4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.thumb-grid.g7 {
+  grid-template-columns: repeat(7, 1fr);
+}
+.thumb-grid img {
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.thumb-grid img:hover {
+  transform: scale(1.04);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+@media (max-width: 600px) {
+  .thumb-grid.g3 { grid-template-columns: repeat(3, 1fr); }
+  .thumb-grid.g4 { grid-template-columns: repeat(2, 1fr); }
+  .thumb-grid.g7 { grid-template-columns: repeat(3, 1fr); }
+  .thumb-grid.g7 img:nth-child(n+4) { height: 60px; }
+}
+
+/* ===== Footer ===== */
+.page-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 24px;
+  margin-top: 8px;
+}
+.page-footer .accent-bar {
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 0 auto 14px;
+}
+
+  .site-back {
+    width: fit-content;
+    margin-bottom: 24px;
+    display: inline-flex;
+    color: var(--accent-deep);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    text-underline-offset: 3px;
+  }
+  .site-back:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="page">\n  <a class="site-back" href="/">← Echo Tian</a>
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>获客项目案例集</h1>
+    <span class="divider">|</span>
+    <span class="name">田畅 / Chang Tian</span>
+  </div>
+
+  <!-- ========== 项目一：AIrise小程序GTM ========== -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">01</div>
+      <div class="title-block">
+        <h2>AIrise小程序GTM（私域+社媒矩阵获客）</h2>
+        <p class="desc">AI native投资小程序从0到1冷启动，私域+社媒内容矩阵双引擎</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card c1">
+        <div class="num">3,200</div>
+        <div class="label">1.5个月种子用户</div>
+        <div class="delta">从0到1冷启动</div>
+      </div>
+      <div class="kpi-card c2">
+        <div class="num">200<span class="unit">/周</span></div>
+        <div class="label">社群周均新增用户</div>
+        <div class="delta">7个企微社群</div>
+      </div>
+      <div class="kpi-card c3">
+        <div class="num">30<span class="unit">/周</span></div>
+        <div class="label">社媒周均新增用户</div>
+        <div class="delta">视频号最优</div>
+      </div>
+      <div class="kpi-card c4">
+        <div class="num">87<span class="unit">%</span></div>
+        <div class="label">AI问答使用率</div>
+        <div class="delta">高粘性</div>
+      </div>
+    </div>
+
+    <div class="content-stack">
+      <div class="content-card">
+        <h4><span class="dot"></span>私域运营</h4>
+        <ul>
+          <li>搭建7个企微社群，早晚报+热点互动持续运营</li>
+          <li>外部社群渠道合作，拓展新用户来源；内部老带新活动，裂变激励机制</li>
+          
+          <li>社群周均200个新用户，主要获客渠道</li>
+        </ul>
+      </div>
+      <div class="content-card">
+        <h4><span class="dot"></span>社媒内容矩阵</h4>
+        <ul>
+          <li>周均60条内容，覆盖公众号/视频号/小红书/抖音/X</li>
+          <li>播放量/阅读量周均6万，持续引流</li>
+          
+          <li>社媒矩阵周均30个新用户，视频号效果最好</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="thumb-grid g4">
+      <img src="/work/acquisition-cases/image-01.jpg" alt="AIrise核心数据">
+      <img src="/work/acquisition-cases/image-02.jpg" alt="社媒矩阵1">
+
+      <img src="/work/acquisition-cases/image-03.jpg" alt="数据看板1">
+
+      <img src="/work/acquisition-cases/image-04.jpg" alt="增长总结">
+    </div>
+  </div>
+
+  <!-- ========== 项目二：4周年庆营销活动 ========== -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">02</div>
+      <div class="title-block">
+        <h2>4周年庆营销活动（MGM, KOl&amp;KOC获客）KOC</h2>
+        <p class="desc">MGM老带新 + KOL&amp;KOC投放 </p>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card c1">
+        <div class="num">12<span class="unit">%</span></div>
+        <div class="label">APP日活提升</div>
+        <div class="delta">对比非活动期</div>
+      </div>
+      <div class="kpi-card c2">
+        <div class="num">160<span class="unit">%</span></div>
+        <div class="label">新增注册提升</div>
+        <div class="delta">多渠道协同</div>
+      </div>
+      <div class="kpi-card c3">
+        <div class="num">50<span class="unit">%</span></div>
+        <div class="label">新增购买提升</div>
+        <div class="delta">4000人</div>
+      </div>
+      <div class="kpi-card c4">
+        <div class="num">3.6<span class="unit">亿</span></div>
+        <div class="label">理财产品销量</div>
+        <div class="delta">↑28%</div>
+      </div>
+    </div>
+
+    <div class="content-stack">
+      <div class="content-card">
+        <h4><span class="dot"></span>策略设计</h4>
+        <ul>
+          <li>APP营销活动：专属定制理财、资产提升有礼、邀新、年度回顾</li>
+          <li>MGM老带新裂变：邀请人被邀请人均得积分</li>
+          <li>KOL&amp;KOC：公众号大V推文和社群合作、小红书种草笔记</li>
+          <li>自有社媒矩阵：公众号/视频号/小红书全域推广，粉丝数达到新高</li>
+        </ul>
+      </div>
+      <div class="content-card">
+        <h4><span class="dot"></span>各渠道成果</h4>
+        <ul>
+          <li><strong>MGM：</strong>新购买27人，100万理财产品销量</li>
+          <li><strong>公众号大V：</strong>3篇，新注册110人，新购买42人，78万理财产品销量</li>
+          <li><strong>小红书koc合作：</strong>13篇，曝光30.5万，投产0.2元/view</li>
+          <li><strong>头条信息流：</strong>新用户52名，单客成本67元，但无购买用户</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="thumb-grid g3">
+      <img src="/work/acquisition-cases/image-05.jpg" alt="周年庆效果截图">
+      <img src="/work/acquisition-cases/image-06.jpg" alt="数据看板1">
+      <img src="/work/acquisition-cases/image-07.jpg" alt="数据看板2">
+    </div>
+  </div>
+
+  <!-- ========== 项目三：新理财产品上线 ========== -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num">03</div>
+      <div class="title-block">
+        <h2>新理财产品上线（线下seminar获客）</h2>
+        <p class="desc">以"存款利率下行如何提高收益"为切入点，线下投教场景实现高转化获客</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card c1">
+        <div class="num">73</div>
+        <div class="label">现场注册人数</div>
+        <div class="delta">到场即转化</div>
+      </div>
+      <div class="kpi-card c2">
+        <div class="num">67<span class="unit">%</span></div>
+        <div class="label">实名认证率</div>
+        <div class="delta">实名49人</div>
+      </div>
+      <div class="kpi-card c3">
+        <div class="num">51<span class="unit">%</span></div>
+        <div class="label">购买转化率</div>
+        <div class="delta">购买37人</div>
+      </div>
+      <div class="kpi-card c4">
+        <div class="num">208<span class="unit">万</span></div>
+        <div class="label">总购买金额</div>
+        <div class="delta">专属产品70.53万</div>
+      </div>
+    </div>
+
+    <div class="content-stack">
+      <div class="content-card">
+        <h4><span class="dot"></span>策略</h4>
+        <ul>
+          <li>以"存款利率下行，如何提高收益"话题切入，投教角度讲述资产配置，降低理解门槛</li>
+          
+          <li>从投教自然过渡到产品推介，并设置活动福利和互动环节提升转化</li>
+          
+        </ul>
+      </div>
+      <div class="content-card">
+        <h4><span class="dot"></span>转化漏斗</h4>
+        <ul>
+          <li><strong>注册73人</strong> → 实名49人（67%）→ 购买37人（51%），绑定微信10人&nbsp;→ 私域蓄水</li>
+          
+          
+          <li><strong>总购买208万</strong>，专属产品70.53万</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="thumb-grid g7">
+      <img src="/work/acquisition-cases/image-08.jpg" alt="Seminar现场1">
+      <img src="/work/acquisition-cases/image-09.jpg" alt="Seminar现场2">
+      <img src="/work/acquisition-cases/image-10.jpg" alt="Seminar现场3">
+
+      <img src="/work/acquisition-cases/image-11.jpg" alt="Seminar现场5">
+
+      <img src="/work/acquisition-cases/image-12.jpg" alt="Seminar现场7">
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    <span class="accent-bar"></span>
+    获客项目案例集 · 田畅
+  </div>
+
+</div>
+</body>
+</html>

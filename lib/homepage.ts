@@ -23,6 +23,7 @@ export type HomepageContent = {
   workHeading: string;
   skillsLabel: string;
   businessLabel: string;
+  acquisitionCasesLabel: string;
   fitnessHeading: string;
   breathingLabel: string;
   contactPrefix: string;
@@ -59,6 +60,7 @@ export const defaultHomepageContent: HomepageContent = {
   workHeading: "My work",
   skillsLabel: "Skills",
   businessLabel: "Business",
+  acquisitionCasesLabel: "获客项目案例集",
   fitnessHeading: "My fitness",
   breathingLabel: "Breathing practice",
   contactPrefix: "Reach out if interested —",

@@ -26,22 +26,24 @@ export default async function WorkPage() {
       </p>
       <AdminEntryLink section="work" label="Add entry" />
 
-      {posts.length ? (
-        <ul className="directory-list">
-          {posts.map((post) => (
-            <li key={post.id}>
-              <Link href={`/posts/${post.slug}`} className="inline-link">
-                {post.title}
-              </Link>
-              <time dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
-              </time>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="directory-empty">No work entries yet.</p>
-      )}
+      <ul className="directory-list">
+        <li>
+          <Link href="/work/acquisition-cases.html" className="inline-link">
+            获客项目案例集
+          </Link>
+          <span className="directory-item-note">Case study</span>
+        </li>
+        {posts.map((post) => (
+          <li key={post.id}>
+            <Link href={`/posts/${post.slug}`} className="inline-link">
+              {post.title}
+            </Link>
+            <time dateTime={post.publishedAt}>
+              {formatDate(post.publishedAt)}
+            </time>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
