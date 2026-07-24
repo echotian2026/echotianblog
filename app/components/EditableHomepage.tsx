@@ -199,23 +199,37 @@ export function EditableHomepage({
         )}
       </section>
 
-      <EditableSection
+      <WritingSection
         editing={editing}
         authenticated={authenticated === true}
         heading={content.writingHeading}
         onHeading={(value) => update("writingHeading", value)}
-        addHref="/admin?section=writing"
-        addLabel="New entry"
-        entries={[
+        categories={[
           {
             href: "/journal",
             label: content.journalLabel,
             onChange: (value) => update("journalLabel", value),
+            addHref: "/admin?section=writing",
+            recentEntries: publicPosts
+              .filter((post) => post.section === "writing")
+              .slice(0, 5)
+              .map((post) => ({
+                href: `/posts/${post.slug}`,
+                label: post.title,
+              })),
           },
           {
             href: "/insights",
             label: content.insightsLabel,
             onChange: (value) => update("insightsLabel", value),
+            addHref: "/admin?section=insights",
+            recentEntries: publicPosts
+              .filter((post) => post.section === "insights")
+              .slice(0, 5)
+              .map((post) => ({
+                href: `/posts/${post.slug}`,
+                label: post.title,
+              })),
           },
         ]}
       />
@@ -304,6 +318,75 @@ export function EditableHomepage({
       )}
       {editing && message && <p className="homepage-edit-error">{message}</p>}
     </div>
+  );
+}
+
+function WritingSection({
+  editing,
+  authenticated,
+  heading,
+  onHeading,
+  categories,
+}: {
+  editing: boolean;
+  authenticated: boolean;
+  heading: string;
+  onHeading: (value: string) => void;
+  categories: Array<{
+    href: string;
+    label: string;
+    onChange: (value: string) => void;
+    addHref: string;
+    recentEntries: Array<{ href: string; label: string }>;
+  }>;
+}) {
+  return (
+    <section className="text-section">
+      {editing ? (
+        <input
+          className="homepage-field homepage-section-heading"
+          aria-label="Section heading"
+          value={heading}
+          onChange={(event) => onHeading(event.target.value)}
+        />
+      ) : (
+        <h2>{heading}</h2>
+      )}
+      <ul className="text-list writing-category-list">
+        {categories.map((category) => (
+          <li className="writing-category" key={category.href}>
+            {editing ? (
+              <input
+                className="homepage-field homepage-link-field"
+                aria-label={`${heading} category`}
+                value={category.label}
+                onChange={(event) => category.onChange(event.target.value)}
+              />
+            ) : (
+              <>
+                <Link href={category.href} className="inline-link">
+                  {category.label}
+                </Link>
+                {category.recentEntries.length > 0 && (
+                  <ul className="writing-recent-list">
+                    {category.recentEntries.map((entry) => (
+                      <li key={entry.href}>
+                        <Link href={entry.href}>{entry.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {authenticated && (
+                  <Link href={category.addHref} className="writing-add-link">
+                    + New entry
+                  </Link>
+                )}
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

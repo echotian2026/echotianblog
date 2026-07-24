@@ -67,6 +67,22 @@ create policy "Public can read homepage content"
   to anon, authenticated
   using (id = 1);
 
+create table if not exists public.work_page_content (
+  slug text primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.work_page_content enable row level security;
+
+drop policy if exists "Public can read work page content"
+  on public.work_page_content;
+create policy "Public can read work page content"
+  on public.work_page_content
+  for select
+  to anon, authenticated
+  using (true);
+
 create table if not exists public.fitness_sessions (
   id uuid primary key default gen_random_uuid(),
   practiced_on date not null default current_date,

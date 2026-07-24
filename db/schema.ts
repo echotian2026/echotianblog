@@ -23,6 +23,12 @@ export const homepageContent = sqliteTable("homepage_content", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const workPageContent = sqliteTable("work_page_content", {
+  slug: text("slug").primaryKey(),
+  content: text("content").notNull().default("{}"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const fitnessSessions = sqliteTable("fitness_sessions", {
   id: text("id").primaryKey(),
   practicedOn: text("practiced_on").notNull(),
