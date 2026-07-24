@@ -204,6 +204,8 @@ export function EditableHomepage({
         authenticated={authenticated === true}
         heading={content.writingHeading}
         onHeading={(value) => update("writingHeading", value)}
+        addHref="/admin?section=writing"
+        addLabel="New entry"
         entries={[
           {
             href: "/journal",
