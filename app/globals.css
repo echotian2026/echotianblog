@@ -474,11 +474,11 @@ a.inline-link:hover {
 .breathing-orb::after { inset: -10%; opacity: .55; }
 
 .breathing-orb.inhale {
-  animation: breathing-inhale 4s ease-in-out forwards;
+  animation: breathing-inhale 3.6s ease-in-out forwards;
 }
 
 .breathing-orb.exhale {
-  animation: breathing-exhale 10s ease-in-out forwards;
+  animation: breathing-exhale 6.5s ease-in-out forwards;
 }
 
 .breathing-orb.complete {
@@ -546,28 +546,6 @@ a.inline-link:hover {
 .breathing-controls .primary-button,
 .breathing-controls .secondary-button {
   min-width: 11.5rem;
-}
-
-.voice-toggle {
-  min-height: 2.85rem;
-  padding: 0 .95rem;
-  border: 1px solid var(--line);
-  border-radius: .55rem;
-  background: transparent;
-  color: var(--subtle);
-  font-size: .76rem;
-  cursor: pointer;
-}
-
-.voice-toggle.active {
-  color: var(--accent-bright);
-  border-color: rgba(192, 132, 252, .35);
-  background: rgba(168, 85, 247, .07);
-}
-
-.voice-toggle:disabled {
-  opacity: .55;
-  cursor: not-allowed;
 }
 
 .breathing-note,

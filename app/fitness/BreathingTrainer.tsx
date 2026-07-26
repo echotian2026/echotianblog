@@ -8,7 +8,6 @@ type Phase = "ready" | "inhale" | "exhale" | "complete";
 
 const ROUNDS_PER_SESSION = 10;
 const SESSIONS_PER_DAY = 5;
-const INHALE_MS = 4_000;
 const EXHALE_MS = 10_000;
 const NUMBER_WORDS = [
   "zero",
@@ -32,6 +31,15 @@ function localDay(date = new Date()) {
   ].join("-");
 }
 
+function dayLabel(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(year, month - 1, day));
+}
+
 function wait(ms: number) {
   return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
@@ -44,8 +52,6 @@ export function BreathingTrainer() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [round, setRound] = useState(0);
   const [sessionNumber, setSessionNumber] = useState(1);
-  const [voiceOn, setVoiceOn] = useState(true);
-  const [localCompletedToday, setLocalCompletedToday] = useState(0);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -72,14 +78,6 @@ export function BreathingTrainer() {
   useEffect(() => {
     const audio = audioRef.current;
     const timer = window.setTimeout(() => {
-      const stored = Number(
-        window.localStorage.getItem(`echo-breathing-sessions-${today}`)
-      );
-      if (Number.isFinite(stored)) {
-        setLocalCompletedToday(
-          Math.min(SESSIONS_PER_DAY, Math.max(0, stored))
-        );
-      }
       void loadSessions().catch(() => {
         setAuthenticated(false);
         setMessage("Your practice history could not be loaded.");
@@ -100,13 +98,9 @@ export function BreathingTrainer() {
     [sessions, today]
   );
 
-  const serverCompletedToday = todaySessions.filter(
+  const completedToday = todaySessions.filter(
     (session) => session.roundsCompleted === ROUNDS_PER_SESSION
   ).length;
-  const completedToday = Math.max(
-    serverCompletedToday,
-    localCompletedToday
-  );
 
   const currentSavedSession =
     todaySessions.find(
@@ -135,14 +129,15 @@ export function BreathingTrainer() {
   async function playClip(
     name: string,
     token = runTokenRef.current,
-    force = false
+    playbackRate = 1
   ) {
     const audio = audioRef.current;
-    if ((!voiceOn && !force) || !audio || token !== runTokenRef.current) return;
+    if (!audio || token !== runTokenRef.current) return;
 
     stopAudio();
     audio.src = `/fitness/audio/${name}.mp3`;
-    audio.playbackRate = 1;
+    audio.playbackRate = playbackRate;
+    audio.defaultPlaybackRate = playbackRate;
     try {
       await audio.play();
       await new Promise<void>((resolve) => {
@@ -153,7 +148,7 @@ export function BreathingTrainer() {
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setMessage(
-        "Sound was blocked. Tap “Test voice” once, then start again."
+        "Sound was blocked. Tap Start again."
       );
     }
   }
@@ -208,7 +203,6 @@ export function BreathingTrainer() {
     lastSavedRoundRef.current = startRound;
     startedAtRef.current = Date.now();
     stopAudio();
-    void playClip("session-start", token);
 
     try {
       for (
@@ -219,12 +213,12 @@ export function BreathingTrainer() {
         if (token !== runTokenRef.current) return;
         setRound(currentRound);
         setPhase("inhale");
-        void playClip(`round-${currentRound}`, token);
-        for (let number = 4; number >= 1; number -= 1) {
-          setCountdown(number);
-          await wait(INHALE_MS / 4);
-          if (token !== runTokenRef.current) return;
-        }
+        setCountdown(null);
+        await playClip(`round-${currentRound}`, token);
+        if (token !== runTokenRef.current) return;
+        setCountdown(1);
+        await wait(1_000);
+        if (token !== runTokenRef.current) return;
 
         setPhase("exhale");
         setCountdown(10);
@@ -232,10 +226,8 @@ export function BreathingTrainer() {
         if (token !== runTokenRef.current) return;
         for (let number = 10; number >= 1; number -= 1) {
           setCountdown(number);
-          await Promise.all([
-            playClip(`number-${number}`, token),
-            wait(EXHALE_MS / 10),
-          ]);
+          void playClip(`number-${number}`, token, 2);
+          await wait(EXHALE_MS / 20);
           if (token !== runTokenRef.current) return;
         }
 
@@ -248,20 +240,11 @@ export function BreathingTrainer() {
 
       setPhase("complete");
       setCountdown(null);
-      const nextCompleted = Math.min(
-        SESSIONS_PER_DAY,
-        completedToday + 1
-      );
-      setLocalCompletedToday(nextCompleted);
-      window.localStorage.setItem(
-        `echo-breathing-sessions-${today}`,
-        String(nextCompleted)
-      );
       void playClip("complete", token);
       setMessage(
         authenticated
           ? "Session complete — your progress was saved automatically."
-          : "Session complete — your progress was saved on this device."
+          : "Session complete — visitor practice was not recorded."
       );
     } catch (error) {
       setPhase("ready");
@@ -286,11 +269,28 @@ export function BreathingTrainer() {
     );
   }
 
+  const historyDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, offset) => {
+      const date = new Date();
+      date.setDate(date.getDate() - offset);
+      const key = localDay(date);
+      const daySessions = sessions.filter(
+        (session) => session.practicedOn === key
+      );
+      return {
+        key,
+        sessions: Array.from({ length: SESSIONS_PER_DAY }, (_, index) =>
+          daySessions.find((session) => session.sessionNumber === index + 1)
+        ),
+      };
+    });
+  }, [sessions]);
+
   const phaseCopy =
     phase === "inhale"
       ? "Breathe in"
       : phase === "exhale"
-        ? "Breathe out slowly"
+        ? "Breathe out"
         : phase === "complete"
           ? "Well done"
           : "Ready when you are";
@@ -323,7 +323,9 @@ export function BreathingTrainer() {
           <strong>{phaseCopy}</strong>
           <span>
             {phase === "inhale"
-              ? "Let the breath arrive gently."
+              ? countdown === 1
+                ? "One quiet second before breathing out."
+                : "Let the full guidance finish."
               : phase === "exhale"
                 ? `Counting down: ${NUMBER_WORDS[countdown ?? 10]}`
                 : "Sit comfortably and keep the breath easy."}
@@ -346,33 +348,9 @@ export function BreathingTrainer() {
                 ? "Today’s practice is complete"
                 : currentSavedSession
                   ? `Resume session ${currentSavedSession.sessionNumber}`
-                  : `Start session ${completedToday + 1}`}
+                : `Start session ${completedToday + 1}`}
             </button>
           )}
-          <button
-            type="button"
-            className={`voice-toggle ${voiceOn ? "active" : ""}`}
-            onClick={() => {
-              stopAudio();
-              setVoiceOn((value) => !value);
-            }}
-            disabled={running}
-            aria-pressed={voiceOn}
-          >
-            {voiceOn ? "Voice on" : "Voice off"}
-          </button>
-          <button
-            type="button"
-            className="voice-toggle"
-            onClick={() => {
-              setVoiceOn(true);
-              setMessage("Playing voice guidance…");
-              void playClip("test", runTokenRef.current, true);
-            }}
-            disabled={running}
-          >
-            Test voice
-          </button>
         </div>
 
         <audio ref={audioRef} preload="auto" />
@@ -415,12 +393,44 @@ export function BreathingTrainer() {
 
         {authenticated === false && (
           <p className="fitness-auth-note">
-            Progress is saved on this device.{" "}
+            Visitor practice is not recorded.{" "}
             <Link href="/admin" className="inline-link">Sign in as admin</Link>{" "}
-            to sync completed rounds privately.
+            to save daily progress privately.
           </p>
         )}
       </section>
+
+      {authenticated && (
+        <section className="fitness-history">
+          <div className="fitness-section-title">
+            <div>
+              <p className="eyebrow">History</p>
+              <h2>Last seven days</h2>
+            </div>
+          </div>
+          <ul>
+            {historyDays.map((day) => (
+              <li key={day.key}>
+                <time dateTime={day.key}>{dayLabel(day.key)}</time>
+                <div className="history-dots">
+                  {day.sessions.map((session, index) => (
+                    <span
+                      key={index}
+                      className={
+                        session?.roundsCompleted === ROUNDS_PER_SESSION
+                          ? "complete"
+                          : session?.roundsCompleted
+                            ? "partial"
+                            : ""
+                      }
+                    />
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
