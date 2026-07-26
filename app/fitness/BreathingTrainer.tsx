@@ -10,7 +10,19 @@ const ROUNDS_PER_SESSION = 10;
 const SESSIONS_PER_DAY = 5;
 const INHALE_MS = 4_000;
 const EXHALE_MS = 10_000;
-const COUNTDOWN = "Ten. Nine. Eight. Seven. Six. Five. Four. Three. Two. One.";
+const NUMBER_WORDS = [
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+];
 
 function localDay(date = new Date()) {
   return [
@@ -18,15 +30,6 @@ function localDay(date = new Date()) {
     String(date.getMonth() + 1).padStart(2, "0"),
     String(date.getDate()).padStart(2, "0"),
   ].join("-");
-}
-
-function dayLabel(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Intl.DateTimeFormat("en", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(year, month - 1, day));
 }
 
 function wait(ms: number) {
@@ -38,11 +41,14 @@ export function BreathingTrainer() {
   const [sessions, setSessions] = useState<FitnessSession[]>([]);
   const [running, setRunning] = useState(false);
   const [phase, setPhase] = useState<Phase>("ready");
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [round, setRound] = useState(0);
   const [sessionNumber, setSessionNumber] = useState(1);
   const [voiceOn, setVoiceOn] = useState(true);
+  const [localCompletedToday, setLocalCompletedToday] = useState(0);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const runTokenRef = useRef(0);
   const startedAtRef = useRef(0);
   const lastSavedRoundRef = useRef(0);
@@ -64,7 +70,16 @@ export function BreathingTrainer() {
   }, []);
 
   useEffect(() => {
+    const audio = audioRef.current;
     const timer = window.setTimeout(() => {
+      const stored = Number(
+        window.localStorage.getItem(`echo-breathing-sessions-${today}`)
+      );
+      if (Number.isFinite(stored)) {
+        setLocalCompletedToday(
+          Math.min(SESSIONS_PER_DAY, Math.max(0, stored))
+        );
+      }
       void loadSessions().catch(() => {
         setAuthenticated(false);
         setMessage("Your practice history could not be loaded.");
@@ -73,9 +88,9 @@ export function BreathingTrainer() {
     return () => {
       window.clearTimeout(timer);
       runTokenRef.current += 1;
-      window.speechSynthesis?.cancel();
+      audio?.pause();
     };
-  }, [loadSessions]);
+  }, [loadSessions, today]);
 
   const todaySessions = useMemo(
     () =>
@@ -85,9 +100,13 @@ export function BreathingTrainer() {
     [sessions, today]
   );
 
-  const completedToday = todaySessions.filter(
+  const serverCompletedToday = todaySessions.filter(
     (session) => session.roundsCompleted === ROUNDS_PER_SESSION
   ).length;
+  const completedToday = Math.max(
+    serverCompletedToday,
+    localCompletedToday
+  );
 
   const currentSavedSession =
     todaySessions.find(
@@ -106,22 +125,37 @@ export function BreathingTrainer() {
   const displayRound =
     running || phase === "complete" ? round : suggestedRound;
 
-  function speak(text: string) {
-    if (!voiceOn || !("speechSynthesis" in window)) return Promise.resolve();
-    return new Promise<void>((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      utterance.voice =
-        voices.find((voice) => /Samantha|Google UK English Female/i.test(voice.name)) ??
-        voices.find((voice) => voice.lang.startsWith("en")) ??
-        null;
-      utterance.lang = "en-US";
-      utterance.rate = 0.82;
-      utterance.pitch = 1;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      window.speechSynthesis.speak(utterance);
-    });
+  function stopAudio() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  async function playClip(
+    name: string,
+    token = runTokenRef.current,
+    force = false
+  ) {
+    const audio = audioRef.current;
+    if ((!voiceOn && !force) || !audio || token !== runTokenRef.current) return;
+
+    stopAudio();
+    audio.src = `/fitness/audio/${name}.mp3`;
+    audio.playbackRate = 1;
+    try {
+      await audio.play();
+      await new Promise<void>((resolve) => {
+        const finish = () => resolve();
+        audio.addEventListener("ended", finish, { once: true });
+        audio.addEventListener("error", finish, { once: true });
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setMessage(
+        "Sound was blocked. Tap “Test voice” once, then start again."
+      );
+    }
   }
 
   async function saveRound(
@@ -170,11 +204,11 @@ export function BreathingTrainer() {
     setPhase("ready");
     setSessionNumber(targetSession);
     setRound(startRound);
+    setCountdown(null);
     lastSavedRoundRef.current = startRound;
     startedAtRef.current = Date.now();
-    window.speechSynthesis?.cancel();
-    await speak(`Session ${targetSession}. Let's begin.`);
-    if (token !== runTokenRef.current) return;
+    stopAudio();
+    void playClip("session-start", token);
 
     try {
       for (
@@ -185,18 +219,25 @@ export function BreathingTrainer() {
         if (token !== runTokenRef.current) return;
         setRound(currentRound);
         setPhase("inhale");
-        await Promise.all([
-          speak(`Round ${currentRound}. Breathe in.`),
-          wait(INHALE_MS),
-        ]);
-        if (token !== runTokenRef.current) return;
+        void playClip(`round-${currentRound}`, token);
+        for (let number = 4; number >= 1; number -= 1) {
+          setCountdown(number);
+          await wait(INHALE_MS / 4);
+          if (token !== runTokenRef.current) return;
+        }
 
         setPhase("exhale");
-        await Promise.all([
-          speak(`Breathe out slowly. ${COUNTDOWN}`),
-          wait(EXHALE_MS),
-        ]);
+        setCountdown(10);
+        await playClip("breathe-out", token);
         if (token !== runTokenRef.current) return;
+        for (let number = 10; number >= 1; number -= 1) {
+          setCountdown(number);
+          await Promise.all([
+            playClip(`number-${number}`, token),
+            wait(EXHALE_MS / 10),
+          ]);
+          if (token !== runTokenRef.current) return;
+        }
 
         const elapsed = Math.round((Date.now() - startedAtRef.current) / 1000);
         await saveRound(targetSession, currentRound, elapsed);
@@ -206,11 +247,21 @@ export function BreathingTrainer() {
       }
 
       setPhase("complete");
-      await speak("Session complete. Well done.");
+      setCountdown(null);
+      const nextCompleted = Math.min(
+        SESSIONS_PER_DAY,
+        completedToday + 1
+      );
+      setLocalCompletedToday(nextCompleted);
+      window.localStorage.setItem(
+        `echo-breathing-sessions-${today}`,
+        String(nextCompleted)
+      );
+      void playClip("complete", token);
       setMessage(
         authenticated
           ? "Session complete — your progress was saved automatically."
-          : "Session complete. Sign in as admin next time to save your progress."
+          : "Session complete — your progress was saved on this device."
       );
     } catch (error) {
       setPhase("ready");
@@ -224,30 +275,16 @@ export function BreathingTrainer() {
 
   function stopPractice() {
     runTokenRef.current += 1;
-    window.speechSynthesis?.cancel();
+    stopAudio();
     setRunning(false);
     setPhase("ready");
+    setCountdown(null);
     setMessage(
       authenticated && lastSavedRoundRef.current > 0
         ? `Paused after round ${lastSavedRoundRef.current}. Completed rounds have been saved.`
         : "Practice stopped."
     );
   }
-
-  const historyDays = useMemo(() => {
-    return Array.from({ length: 7 }, (_, offset) => {
-      const date = new Date();
-      date.setDate(date.getDate() - offset);
-      const key = localDay(date);
-      const daySessions = sessions.filter((session) => session.practicedOn === key);
-      return {
-        key,
-        sessions: Array.from({ length: SESSIONS_PER_DAY }, (_, index) =>
-          daySessions.find((session) => session.sessionNumber === index + 1)
-        ),
-      };
-    });
-  }, [sessions]);
 
   const phaseCopy =
     phase === "inhale"
@@ -275,7 +312,11 @@ export function BreathingTrainer() {
         </div>
 
         <div className={`breathing-orb ${phase}`} aria-hidden="true">
-          <div className="breathing-orb-core" />
+          <div className="breathing-orb-core">
+            <span className="breathing-countdown">
+              {phase === "complete" ? "✓" : countdown ?? "•"}
+            </span>
+          </div>
         </div>
 
         <div className="breathing-phase">
@@ -284,7 +325,7 @@ export function BreathingTrainer() {
             {phase === "inhale"
               ? "Let the breath arrive gently."
               : phase === "exhale"
-                ? "Relax your shoulders as you count down."
+                ? `Counting down: ${NUMBER_WORDS[countdown ?? 10]}`
                 : "Sit comfortably and keep the breath easy."}
           </span>
         </div>
@@ -312,7 +353,7 @@ export function BreathingTrainer() {
             type="button"
             className={`voice-toggle ${voiceOn ? "active" : ""}`}
             onClick={() => {
-              window.speechSynthesis?.cancel();
+              stopAudio();
               setVoiceOn((value) => !value);
             }}
             disabled={running}
@@ -320,8 +361,21 @@ export function BreathingTrainer() {
           >
             {voiceOn ? "Voice on" : "Voice off"}
           </button>
+          <button
+            type="button"
+            className="voice-toggle"
+            onClick={() => {
+              setVoiceOn(true);
+              setMessage("Playing voice guidance…");
+              void playClip("test", runTokenRef.current, true);
+            }}
+            disabled={running}
+          >
+            Test voice
+          </button>
         </div>
 
+        <audio ref={audioRef} preload="auto" />
         <p className="breathing-note">
           Stay seated and breathe comfortably. Stop if you feel dizzy or unwell.
         </p>
@@ -361,45 +415,12 @@ export function BreathingTrainer() {
 
         {authenticated === false && (
           <p className="fitness-auth-note">
-            The trainer is ready to use. <Link href="/admin" className="inline-link">
-              Sign in as admin
-            </Link>{" "}
-            to save and view your private practice history.
+            Progress is saved on this device.{" "}
+            <Link href="/admin" className="inline-link">Sign in as admin</Link>{" "}
+            to sync completed rounds privately.
           </p>
         )}
       </section>
-
-      {authenticated && (
-        <section className="fitness-history">
-          <div className="fitness-section-title">
-            <div>
-              <p className="eyebrow">History</p>
-              <h2>Last seven days</h2>
-            </div>
-          </div>
-          <ul>
-            {historyDays.map((day) => (
-              <li key={day.key}>
-                <time dateTime={day.key}>{dayLabel(day.key)}</time>
-                <div className="history-dots">
-                  {day.sessions.map((session, index) => (
-                    <span
-                      key={index}
-                      className={
-                        session?.roundsCompleted === ROUNDS_PER_SESSION
-                          ? "complete"
-                          : session?.roundsCompleted
-                            ? "partial"
-                            : ""
-                      }
-                    />
-                  ))}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

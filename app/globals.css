@@ -446,6 +446,7 @@ a.inline-link:hover {
 }
 
 .breathing-orb {
+  position: relative;
   width: min(46vw, 13rem);
   aspect-ratio: 1;
   margin: 3.1rem auto 2.55rem;
@@ -459,6 +460,18 @@ a.inline-link:hover {
     0 0 5rem rgba(168, 85, 247, .11);
   transform: scale(.78);
 }
+
+.breathing-orb::before,
+.breathing-orb::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(192, 132, 252, .15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.breathing-orb::before { inset: 10%; }
+.breathing-orb::after { inset: -10%; opacity: .55; }
 
 .breathing-orb.inhale {
   animation: breathing-inhale 4s ease-in-out forwards;
@@ -475,12 +488,21 @@ a.inline-link:hover {
 .breathing-orb-core {
   width: 42%;
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
   background:
     radial-gradient(circle at 34% 30%, #e9d5ff, #a855f7 48%, #581c87);
   box-shadow:
     0 0 2.5rem rgba(192, 132, 252, .38),
     inset 0 0 1.2rem rgba(255, 255, 255, .18);
+}
+
+.breathing-countdown {
+  color: #fff;
+  font: 650 1.65rem/1 var(--font-geist-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 14px rgba(12, 7, 20, .48);
 }
 
 @keyframes breathing-inhale {
