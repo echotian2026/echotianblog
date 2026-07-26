@@ -8,7 +8,6 @@ type Phase = "ready" | "inhale" | "exhale" | "complete";
 
 const ROUNDS_PER_SESSION = 10;
 const SESSIONS_PER_DAY = 5;
-const EXHALE_MS = 10_000;
 const NUMBER_WORDS = [
   "zero",
   "one",
@@ -55,6 +54,7 @@ export function BreathingTrainer() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const finishClipRef = useRef<(() => void) | null>(null);
   const runTokenRef = useRef(0);
   const startedAtRef = useRef(0);
   const lastSavedRoundRef = useRef(0);
@@ -122,6 +122,7 @@ export function BreathingTrainer() {
   function stopAudio() {
     const audio = audioRef.current;
     if (!audio) return;
+    finishClipRef.current?.();
     audio.pause();
     audio.currentTime = 0;
   }
@@ -139,11 +140,29 @@ export function BreathingTrainer() {
     audio.playbackRate = playbackRate;
     audio.defaultPlaybackRate = playbackRate;
     try {
-      await audio.play();
-      await new Promise<void>((resolve) => {
-        const finish = () => resolve();
-        audio.addEventListener("ended", finish, { once: true });
-        audio.addEventListener("error", finish, { once: true });
+      await new Promise<void>((resolve, reject) => {
+        let finished = false;
+        const cleanup = () => {
+          audio.removeEventListener("ended", finish);
+          audio.removeEventListener("error", fail);
+          if (finishClipRef.current === finish) finishClipRef.current = null;
+        };
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve();
+        };
+        const fail = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          reject(new Error(`Could not play ${name}.`));
+        };
+        finishClipRef.current = finish;
+        audio.addEventListener("ended", finish);
+        audio.addEventListener("error", fail);
+        void audio.play().catch(fail);
       });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
@@ -226,8 +245,8 @@ export function BreathingTrainer() {
         if (token !== runTokenRef.current) return;
         for (let number = 10; number >= 1; number -= 1) {
           setCountdown(number);
-          void playClip(`number-${number}`, token, 2);
-          await wait(EXHALE_MS / 20);
+          await playClip(`number-${number}`, token, 2);
+          await wait(80);
           if (token !== runTokenRef.current) return;
         }
 
