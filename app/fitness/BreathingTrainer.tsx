@@ -8,6 +8,8 @@ type Phase = "ready" | "inhale" | "exhale" | "complete";
 
 const ROUNDS_PER_SESSION = 10;
 const SESSIONS_PER_DAY = 5;
+const COUNTDOWN_MS = 10_000;
+const COUNTDOWN_STEP_MS = COUNTDOWN_MS / 10;
 const NUMBER_WORDS = [
   "zero",
   "one",
@@ -243,11 +245,17 @@ export function BreathingTrainer() {
         setCountdown(10);
         await playClip("breathe-out", token);
         if (token !== runTokenRef.current) return;
+        const countdownStartedAt = performance.now();
         for (let number = 10; number >= 1; number -= 1) {
           setCountdown(number);
           await playClip(`number-${number}`, token, 2);
-          await wait(80);
           if (token !== runTokenRef.current) return;
+          const stepNumber = 11 - number;
+          const remainingStepTime =
+            countdownStartedAt +
+            stepNumber * COUNTDOWN_STEP_MS -
+            performance.now();
+          if (remainingStepTime > 0) await wait(remainingStepTime);
         }
 
         const elapsed = Math.round((Date.now() - startedAtRef.current) / 1000);
