@@ -8,7 +8,7 @@ type Phase = "ready" | "inhale" | "exhale" | "complete";
 
 const ROUNDS_PER_SESSION = 10;
 const SESSIONS_PER_DAY = 5;
-const COUNTDOWN_MS = 10_000;
+const COUNTDOWN_MS = 6_000;
 const COUNTDOWN_STEP_MS = COUNTDOWN_MS / 10;
 const NUMBER_WORDS = [
   "zero",
