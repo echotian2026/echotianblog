@@ -10,6 +10,11 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  checkLocked,
+  recordFailure,
+  resetLimit,
+} from "@/lib/clientRateLimit";
 import type { JournalPost, PostSection } from "@/lib/posts";
 
 type Mood = "sad" | "neutral" | "happy";
@@ -91,6 +96,18 @@ export function AdminDashboard({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const lastSavedRef = useRef("");
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const { locked, retryAfter } = checkLocked();
+      if (locked) {
+        setMessage(
+          `登录失败次数过多，请 ${Math.ceil(retryAfter / 60)} 分钟后再试`
+        );
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const loadPosts = useCallback(async () => {
     const response = await fetch("/api/admin/posts", { cache: "no-store" });
     if (response.status === 401) {
@@ -107,7 +124,11 @@ export function AdminDashboard({
       .then(async (data: { authenticated: boolean }) => {
         setAuthenticated(data.authenticated);
         setAuthChecked(true);
-        if (data.authenticated) await loadPosts();
+        if (data.authenticated) {
+          resetLimit();
+          setMessage("");
+          await loadPosts();
+        }
       });
   }, [loadPosts]);
 
@@ -186,20 +207,44 @@ export function AdminDashboard({
 
   async function login(event: FormEvent) {
     event.preventDefault();
-    setMessage("");
-    const response = await fetch("/api/admin/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const data = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setMessage(data.error ?? "Unable to unlock the journal.");
+
+    const { locked, retryAfter } = checkLocked();
+    if (locked) {
+      setMessage(
+        `登录失败次数过多，请 ${Math.ceil(retryAfter / 60)} 分钟后再试`
+      );
       return;
     }
-    setPassword("");
-    setAuthenticated(true);
-    await loadPosts();
+
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        if (response.status === 401) {
+          const result = recordFailure();
+          setMessage(
+            result.locked
+              ? `登录失败次数过多，请 ${Math.ceil(result.retryAfter / 60)} 分钟后再试`
+              : `密码错误，剩余尝试次数：${result.remaining}`
+          );
+        } else {
+          setMessage(data.error ?? "Unable to unlock the journal.");
+        }
+        return;
+      }
+
+      resetLimit();
+      setPassword("");
+      setAuthenticated(true);
+      await loadPosts();
+    } catch {
+      setMessage("Unable to unlock the journal. Please try again.");
+    }
   }
 
   function edit(post: JournalPost) {
