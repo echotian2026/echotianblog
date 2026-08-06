@@ -115,12 +115,14 @@ export async function listPublicPosts(section?: PostSection) {
   return (data as PostRow[]).map(fromRow);
 }
 
-export async function listAllPosts() {
-  const { data, error } = await getSupabaseAdmin()
+export async function listAllPosts(section?: PostSection) {
+  let query = getSupabaseAdmin()
     .from("posts")
     .select("*")
     .order("published_at", { ascending: false })
     .order("created_at", { ascending: false });
+  if (section) query = query.eq("section", section);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return (data as PostRow[]).map(fromRow);
 }
@@ -147,6 +149,16 @@ export async function getPublicPost(slug: string) {
     .select("*")
     .eq("slug", slug)
     .eq("is_private", false)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? fromRow(data as PostRow) : null;
+}
+
+export async function getAdminPost(slug: string) {
+  const { data, error } = await getSupabaseAdmin()
+    .from("posts")
+    .select("*")
+    .eq("slug", slug)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? fromRow(data as PostRow) : null;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AdminEntryLink } from "@/app/components/AdminEntryLink";
-import { listPublicPosts } from "@/lib/posts";
+import { hasAdminPageSession } from "@/lib/admin-page-auth";
+import { listAllPosts, listPublicPosts } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,10 @@ function formatDate(value: string) {
 }
 
 export default async function JournalPage() {
-  const posts = await listPublicPosts("writing");
+  const isAdmin = await hasAdminPageSession();
+  const posts = isAdmin
+    ? await listAllPosts("writing")
+    : await listPublicPosts("writing");
 
   return (
     <section className="directory-page">
@@ -36,9 +40,12 @@ export default async function JournalPage() {
           </li>
           {posts.map((post) => (
             <li key={post.id}>
-              <Link href={`/posts/${post.slug}`} className="inline-link">
-                {post.title}
-              </Link>
+              <span className="directory-entry-title">
+                <Link href={`/posts/${post.slug}`} className="inline-link">
+                  {post.title}
+                </Link>
+                {post.isPrivate && <span className="directory-private-badge">🔒 Private</span>}
+              </span>
               <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
             </li>
           ))}

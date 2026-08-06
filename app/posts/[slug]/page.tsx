@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import { getPublicPost } from "@/lib/posts";
+import { hasAdminPageSession } from "@/lib/admin-page-auth";
+import { getAdminPost, getPublicPost } from "@/lib/posts";
 import { JournalEntry } from "@/app/components/JournalEntry";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublicPost(slug);
+  const isAdmin = await hasAdminPageSession();
+  const post = isAdmin ? await getAdminPost(slug) : await getPublicPost(slug);
   return post ? { title: post.title } : { title: "Entry not found" };
 }
 
@@ -28,7 +30,8 @@ const journalSchema = {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPublicPost(slug);
+  const isAdmin = await hasAdminPageSession();
+  const post = isAdmin ? await getAdminPost(slug) : await getPublicPost(slug);
   if (!post) notFound();
 
   return (
@@ -38,6 +41,7 @@ export default async function PostPage({ params }: Props) {
       mood={post.mood}
       city={post.city}
       tags={post.tags}
+      isPrivate={post.isPrivate}
       backHref={
         post.section === "work"
           ? "/work"

@@ -55,6 +55,7 @@ export function JournalEntry({
   mood,
   city,
   tags = [],
+  isPrivate = false,
   backHref = "/journal",
   backLabel = "Journal",
   children,
@@ -64,6 +65,7 @@ export function JournalEntry({
   mood: Mood;
   city: string;
   tags?: string[];
+  isPrivate?: boolean;
   backHref?: string;
   backLabel?: string;
   children: ReactNode;
@@ -92,6 +94,7 @@ export function JournalEntry({
           </span>
         </div>
         <h1>{title}</h1>
+        {isPrivate && <span className="entry-private-badge">🔒 Private entry</span>}
         {tags.length > 0 && (
           <div className="post-tags" aria-label="Tags">
             {tags.map((tag) => (

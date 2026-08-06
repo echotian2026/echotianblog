@@ -709,6 +709,31 @@ a.inline-link:hover {
   font: .72rem var(--font-geist-mono), monospace;
 }
 
+.directory-entry-title {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: .55rem;
+}
+
+.directory-private-badge,
+.entry-private-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 999px;
+  padding: .12rem .42rem;
+  color: var(--subtle);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font: .64rem var(--font-geist-mono), monospace;
+  white-space: nowrap;
+}
+
+.entry-private-badge {
+  margin-top: .8rem;
+}
+
 .directory-item-note {
   flex: none;
   color: var(--subtle);
